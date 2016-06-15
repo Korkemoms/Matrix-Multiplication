@@ -1,0 +1,10 @@
+info face="OpenSans-Large" size=250 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=2 padding=0,0,0,0 spacing=0,0
+common lineHeight=340 base=267 scaleW=1 scaleH=1 pages=1 packed=0 alphaChnl=0 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="250_OpenSans-Large/OpenSans-Large.png"
+chars count=5
+char id=0    x=2    y=171  width=67   height=167  xoffset=8    yoffset=100  xadvance=91   page=0    chnl=0
+char id=32   x=0    y=0    width=91   height=0    xoffset=0    yoffset=0    xadvance=91   page=0    chnl=0
+char id=65   x=208  y=2    width=159  height=180  xoffset=0    yoffset=87   xadvance=158  page=0    chnl=0
+char id=66   x=369  y=2    width=124  height=178  xoffset=25   yoffset=89   xadvance=163  page=0    chnl=0
+char id=67   x=71   y=2    width=135  height=183  xoffset=15   yoffset=86   xadvance=157  page=0    chnl=0
+kernings count=0

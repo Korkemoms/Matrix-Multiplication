@@ -1,0 +1,215 @@
+package org.ajm.laforkids
+
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.scenes.scene2d.ui.Cell
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.utils.Align
+
+/**
+ * Table representing a matrix with integer entries.
+ */
+open class Matrix : Table {
+
+    /** Whether to draw the matrix left and right outlines. */
+    var drawOutlines = true
+
+    /** The width of the outlines. */
+    var outlineThickness = 5f
+
+    /** The padding around each entry. */
+    var entryPad = 0f
+        set(value) {
+            if (value < 0) throw IllegalArgumentException()
+            for (cell in cells) {
+                cell.pad(value)
+            }
+            mustPack = true
+            field = value
+        }
+
+    /** The width of each entry. */
+    var entryWidth = 15f
+        set(value) {
+            if (field != value) {
+                mustPack = true
+                for (cell in cells)
+                    cell.width(value)
+            }
+
+            field = value;
+        }
+
+    /** The height of each entry. */
+    var entryHeight = 15f
+        set(value) {
+            if (field != value) {
+                mustPack = true
+                for (cell in cells)
+                    cell.height(value)
+            }
+
+            field = value;
+        }
+
+    /** Used for drawing the outlines. */
+    private val dot: TextureRegion
+    private var mustPack = false
+    private var backgroundFont: BitmapFont? = null
+
+    /** The width of the text displayed in the background. */
+    var backgroundTextWidth = 0f
+
+    /** The height of the text displayed in the background. */
+    var backgroundTextHeight = 0f
+
+    /** Text drawn behind the entries. Intended for displaying
+     * the name of the matrix, for example: A */
+    var backgroundText = ""
+        set(value) {
+            field = value
+            val glyphLayout = GlyphLayout(backgroundFont, value)
+            backgroundTextWidth = glyphLayout.width
+            backgroundTextHeight = glyphLayout.height
+        }
+
+    /** The color of the background text. */
+    var backgroundTextColor = Color(0.9f, 0.9f, 0.9f, 1f)
+
+    /**
+     *
+     * @param skin needed for the fonts
+     * @param rows number of rows the matrix should have
+     * @param columns number of columns the matrix should have
+     */
+    constructor(skin: Skin, rows: Int, columns: Int) {
+        dot = skin.getRegion("dot")
+
+        backgroundFont = skin.get("OpenSans-Large", BitmapFont::class.java)
+
+        for (row in 0 until rows) {
+            for (col in 0 until  columns) {
+                val label1 = Label("", skin, "OpenSans-Entry")
+
+                label1.setAlignment(Align.center)
+                add(label1).width(entryWidth).height(entryHeight)
+            }
+            row()
+        }
+    }
+
+    /**
+     *
+     * Set the value of the entry at given row and column.
+     *
+     * toString() is called on given value and the resulting string
+     * is the value that is saved in the indicated position.
+     *
+     * (0,0) is top left
+     *
+     * @param row the row of the entry
+     * @param col the column of the entry
+     * @param value toString() is called on this value
+     * */
+    fun set(row: Int, col: Int, value: kotlin.Any) {
+        if (row < 0 || col < 0) throw IllegalArgumentException()
+
+        val actor = cells.get(row * columns + col).actor;
+
+        if (actor is Label) {
+            actor.isVisible = true
+            actor.setText(value.toString())
+        }
+    }
+
+    /**
+     * Get the string stored in the indicated position.
+     *
+     * (0,0) is top left
+     *
+     * @param row the row of the entry
+     * @param col the column of the entry
+     */
+    fun get(row: Int, col: Int): kotlin.String {
+        if (row < 0 || col < 0) throw IllegalArgumentException()
+
+        val actor = cells.get(row * columns + col).actor;
+        if (actor is Label)
+            return actor.text.toString()
+        return actor.toString()
+    }
+
+    /**
+     * Get the cell of indicated position.
+     *
+     * (0,0) is top left
+     *
+     * @param row the row of the entry
+     * @param col the column of the entry
+     */
+    fun getCell(row: Int, col: Int): Cell<Label>? {
+        val cell = cells.get(row * columns + col);
+        if (cell.actor != null && cell.actor is Label)
+            return cell as Cell<Label>
+        return null
+    }
+
+    override fun draw(batch: Batch?, parentAlpha: Float) {
+        if (mustPack) {
+            pack()
+            mustPack = false
+        }
+
+        // draw background text
+        if (backgroundText.length > 0) {
+            backgroundFont!!.color = backgroundTextColor
+            val matrixCenter = localToStageCoordinates(Vector2(width / 2f, height / 2f));
+
+            val x = matrixCenter.x - backgroundTextWidth / 2f
+            val y = matrixCenter.y + backgroundTextHeight / 2f
+            backgroundFont!!.draw(batch, backgroundText, x, y)
+        }
+
+        super.draw(batch, parentAlpha)
+
+        // draw outlines
+        if (!drawOutlines) return
+        batch!!.color = Color.BLACK
+
+        // left vertical outline
+        val pos = localToStageCoordinates(Vector2(0f, 0f));
+        val x = round(pos.x)
+        val y = round(pos.y)
+        val width = round(width)
+        val height = round(height)
+        val outlineThickness = round(outlineThickness)
+
+        // left vertical outline
+        filledRectangle(batch, x, y, outlineThickness, height)
+        // left bottom horizontal outline
+        filledRectangle(batch, x, y, outlineThickness * 5, outlineThickness)
+        // left top horizontal outline
+        filledRectangle(batch, x, y + height - outlineThickness, outlineThickness * 5, outlineThickness)
+        // right vertical outline
+        filledRectangle(batch, x + width - outlineThickness, y, outlineThickness, height)
+        // left bottom horizontal outline
+        filledRectangle(batch, x + width - outlineThickness - outlineThickness * 4, y, outlineThickness * 5, outlineThickness)
+        // left top horizontal outline
+        filledRectangle(batch, x + width - outlineThickness - outlineThickness * 4,
+                y + height - outlineThickness, outlineThickness * 5, outlineThickness)
+
+    }
+
+    private fun filledRectangle(batch: Batch, x: Float, y: Float, width: Float, height: Float) {
+        batch!!.draw(dot, round(x), round(y), round(width), round(height))
+    }
+
+    fun round(a: Float) = Math.floor(a.toDouble()).toFloat()
+
+}
