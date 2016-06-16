@@ -14,103 +14,21 @@ import java.util.*
  */
 class GameLogic {
 
+    constructor(settings:Settings){
+        this.settings = settings
+    }
+
+    val settings:Settings
+
+
     private var multiplicationTable: ColoredMultiplicationTable? = null
 
     private val random = Random()
-    private val prefs = Gdx.app.getPreferences("Matrix Multiplication");
 
-    val SETTING_MIN_VALUE = "minValue"
-    val SETTING_MAX_VALUE = "maxValue"
-    val SETTING_MIN_ROWS_LEFT = "minRowsLeft"
-    val SETTING_MAX_ROWS_LEFT = "maxRowsLeft"
-    val SETTING_MIN_COLUMNS_LEFT = "minColumnsLeft"
-    val SETTING_MAX_COLUMNS_LEFT = "maxColumnsLeft"
-    val SETTING_MIN_COLUMNS_RIGHT = "minColumnsRight"
-    val SETTING_MAX_COLUMNS_RIGHT = "maxColumnsRight"
-    val SETTING_ANSWER_ALTERNATIVES = "answerAlternatives"
-    val SETTING_ANSWER_MAX_ERROR = "answerMaxError"
-
-
-    /** Smallest possible entry value. */
-    var minValue = prefs.getInteger(SETTING_MIN_VALUE, -10)
-        set(value) {
-            if (value > maxValue) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MIN_VALUE, value)
-        }
-    /** Largest possible entry value. */
-    var maxValue = prefs.getInteger(SETTING_MAX_VALUE, 10)
-        set(value) {
-            if (value < minValue) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MAX_VALUE, value)
-        }
-
-    /** Lowest possible number of rows in left matrix, A. */
-    var minRowsLeft = prefs.getInteger(SETTING_MIN_ROWS_LEFT, 1)
-        set(value) {
-            if (value < 0 || value > maxRowsLeft) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MIN_ROWS_LEFT, value)
-        }
-    /** Highest possible number of rows in left matrix, A. */
-    var maxRowsLeft = prefs.getInteger(SETTING_MAX_ROWS_LEFT, 3)
-        set(value) {
-            if (value < 0 || value < minRowsLeft) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MAX_ROWS_LEFT, value)
-        }
-
-    /** Lowest possible number of columns in left matrix, A. The number of rows in the right matrix B must be
-     * the same. */
-    var minColumnsLeft = prefs.getInteger(SETTING_MIN_COLUMNS_LEFT, 1)
-        set(value) {
-            if (value < 0 || value > maxColumnsLeft) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MIN_COLUMNS_LEFT, value)
-        }
-    /** Highest possible number of columns in left matrix, A. The number of rows in the right matrix B must be
-     * the same. */
-    var maxColumnsLeft = prefs.getInteger(SETTING_MAX_COLUMNS_LEFT, 3)
-        set(value) {
-            if (value < 0 || value < minColumnsLeft) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MAX_COLUMNS_LEFT, value)
-        }
-
-    /** Lowest possible number of rows in right matrix, B. */
-    var minColumnsRight = prefs.getInteger(SETTING_MIN_COLUMNS_RIGHT, 1)
-        set(value) {
-            if (value < 0 || value > minColumnsRight) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MIN_COLUMNS_RIGHT, value)
-        }
-    /** Highest possible number of rows in right matrix, B. */
-    var maxColumnsRight = prefs.getInteger(SETTING_MAX_COLUMNS_RIGHT, 3)
-        set(value) {
-            if (value < 0 || value < minColumnsRight) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_MAX_COLUMNS_RIGHT, value)
-        }
-
-    /** The number of value to choose from when entering your answer. */
-    var answerAlternatives = prefs.getInteger(SETTING_ANSWER_ALTERNATIVES, 3)
-        set(value) {
-            if (value < 0) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_ANSWER_ALTERNATIVES, value)
-        }
-    /** The maximum error of the answer alternatives. */
-    var answerMaxError = prefs.getInteger(SETTING_ANSWER_MAX_ERROR, 10)
-        set(value) {
-            if (value < 0) throw IllegalArgumentException()
-            field = value;
-            prefs.putInteger(SETTING_ANSWER_MAX_ERROR, value)
-        }
 
     /** The progress of the game, iterates over all the entries in the product matrix C. */
     var progress = 0
-        set(value) {
+        private set(value) {
             if (value < 0) throw IllegalArgumentException()
             field = value
         }
@@ -128,26 +46,25 @@ class GameLogic {
             field = value
         }
 
-    /** Must be called after updating settings to ensure they
-     * persist after app is closed. */
-    fun saveSettingsForever() {
-        prefs.flush()
-    }
 
     /**
      * [newGame] must be called before [connect].
      * */
-    fun newGame() {
-        rowsLeft = getRandomLeftRowCount()
-        columnsLeft = getRandomLeftColumnCount()
-        columnsRight = getRandomRightColumnCount()
+    fun newGame(rowsLeft: Int = getRandomLeftRowCount(),
+                columnsLeft: Int = getRandomLeftColumnCount(),
+                columnsRight: Int = getRandomRightColumnCount()) {
+        this.rowsLeft = rowsLeft
+        this.columnsLeft = columnsLeft
+        this.columnsRight = columnsRight
+        progress = 0
+        multiplicationTable = null
     }
 
-    private fun getRandomLeftRowCount() = random.nextInt(maxRowsLeft - minRowsLeft + 1) + minRowsLeft
+    private fun getRandomLeftRowCount() = random.nextInt(settings.maxRowsLeft - settings.minRowsLeft + 1) + settings.minRowsLeft
 
-    private fun getRandomLeftColumnCount() = random.nextInt(maxColumnsLeft - minColumnsLeft + 1) + minColumnsLeft
+    private fun getRandomLeftColumnCount() = random.nextInt(settings.maxColumnsLeft - settings.minColumnsLeft + 1) + settings.minColumnsLeft
 
-    private fun getRandomRightColumnCount() = random.nextInt(maxColumnsRight - minColumnsRight + 1) + minColumnsRight
+    private fun getRandomRightColumnCount() = random.nextInt(settings.maxColumnsRight - settings.minColumnsRight + 1) + settings.minColumnsRight
 
     /**
      * Adds functionality to certain buttons. Prepares the entries of the matrices
@@ -160,7 +77,6 @@ class GameLogic {
         if (multiplicationTable.columnsRight != columnsRight || columnsRight <= 0) throw IllegalArgumentException()
 
 
-
         if (this.multiplicationTable == multiplicationTable) return
         val old = this.multiplicationTable
         this.multiplicationTable = multiplicationTable
@@ -170,7 +86,7 @@ class GameLogic {
         if (old != null && !newGame) {
             multiplicationTable.copyEntries(old)
         } else {
-            multiplicationTable.randomizeEntries(minValue, maxValue)
+            multiplicationTable.randomizeEntries(settings.minValue, settings.maxValue)
             updateAnswerAlternatives()
         }
 
@@ -200,7 +116,6 @@ class GameLogic {
                             Gdx.app.postRunnable({
                                 if (completed) {
                                     // new game
-                                    progress = 0
                                     main.init(true, false)
                                 }
 
@@ -271,7 +186,7 @@ class GameLogic {
             var error = 0;
             var j = 0
             while ((error == 0 || errors.contains(error, false)) && j++ < 10) {
-                error = random.nextInt(answerMaxError * 2) - answerMaxError
+                error = random.nextInt(settings.answerMaxError * 2) - settings.answerMaxError
             }
             errors.add(error)
             multiplicationTable!!.matrixAnswers.set(0, i, correctAnswer + error)
@@ -279,7 +194,6 @@ class GameLogic {
 
         // let one entry be the correct answer
         multiplicationTable!!.matrixAnswers.set(0, random.nextInt(multiplicationTable!!.answerAlternatives), correctAnswer)
-
 
     }
 

@@ -32,10 +32,12 @@ class Main {
     var menu: Menu? = null
     var helpFrame: ScrollPane? = null
     val skin = Skin()
-    val gameLogic = GameLogic()
+    val settings = Settings()
+    val gameLogic = GameLogic(settings)
     var entryFont: BitmapFont? = null
     var font_large: BitmapFont? = null
     var defaultFont: BitmapFont? = null
+
 
 
     private val generator = SmartFontGenerator(Gdx.files.internal("OpenSans.ttf"))
@@ -83,7 +85,7 @@ class Main {
         val pad = matrixInsidePad + matrixOutsidePad
 
         val entryWidth = (Gdx.graphics.width.toFloat() * screenFill - pad * 4 - columns * entryPad * 2) /
-                Math.max(columns, gl.answerAlternatives).toFloat()
+                Math.max(columns, settings.answerAlternatives).toFloat()
         val entryHeight = (Gdx.graphics.height.toFloat() * screenFill - pad * 6 - rows * entryPad * 2) / rows.toFloat()
 
 
@@ -136,7 +138,7 @@ class Main {
 
         // prepare a new multiplication table
         multiplicationTable = ColoredMultiplicationTable(skin,
-                gl.rowsLeft, gl.columnsLeft, gl.columnsRight, gl.answerAlternatives)
+                gl.rowsLeft, gl.columnsLeft, gl.columnsRight, settings.answerAlternatives)
         multiplicationTable!!.interpolationMethod = interpolationMethod
         multiplicationTable!!.interpolationTime = interpolationTime
         multiplicationTable!!.entryWidth = entryWidth
@@ -147,7 +149,7 @@ class Main {
         multiplicationTable!!.outlineThickness = outlineThickness
         multiplicationTable!!.matrixEntryPad = entryPad
         multiplicationTable!!.setFillParent(true)
-        multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / gl.answerAlternatives.toFloat()
+        multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / settings.answerAlternatives.toFloat()
         multiplicationTable!!.matrixAnswers.entryPad = 0f
         stage.addActor(multiplicationTable!!)
 
@@ -166,7 +168,7 @@ class Main {
                 multiplicationTable!!.isVisible = false
 
                 // prepare settings interface
-                val settings = Settings(this@Main)
+                val settings = SettingsInterface(this@Main)
                 settings.onOk = Runnable { init(true, false) }
                 settings.onCancel = Runnable {
                     stage.actors.removeValue(settings, true)
