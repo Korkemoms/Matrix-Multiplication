@@ -1,15 +1,19 @@
 buildscript {
+    ext.kotlin_version = '1.0.2-1'
     repositories {
         mavenLocal()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven {  url "http://repository.jetbrains.com/all"   }
         jcenter()
     }
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.6'
         classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
+apply plugin: 'kotlin'
 
 allprojects {
     apply plugin: "eclipse"
@@ -26,6 +30,7 @@ allprojects {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        maven {  url "http://repository.jetbrains.com/all"   }
     }
 }
 
@@ -72,12 +77,21 @@ project(":core") {
 
 
     dependencies {
+        testCompile 'junit:junit:4.12'
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
     }
 }
 
 tasks.eclipse.doLast {
     delete ".project"
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+}
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
 }
