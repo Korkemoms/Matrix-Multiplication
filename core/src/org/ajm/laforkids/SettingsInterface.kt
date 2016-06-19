@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.Align
 class SettingsInterface : ScrollPane {
 
     /** Stuff to do when ok is clicked. */
-    var onOk = Runnable { }
+    var onSaved = Runnable { }
 
     /** Stuff to do when cancel is clicked. */
     var onCancel = Runnable { }
@@ -101,11 +101,11 @@ class SettingsInterface : ScrollPane {
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         // prepare ok and cancel buttons
-        val ok = TextButton("Ok", skin)
+        val ok = TextButton("Save", skin)
         ok.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
 
-                // save settings
+                // try to save settings
                 s.minValue = minValue.text.toInt()
                 s.maxValue = maxValue.text.toInt()
                 s.minRowsLeft = minRowsLeft.text.toInt()
@@ -117,15 +117,31 @@ class SettingsInterface : ScrollPane {
                 s.answerAlternatives = answerAlternatives.text.toInt()
                 s.answerMaxError = answerMaxError.text.toInt()
 
-                s.saveSettingsForever()
+                val errors = s.dataInvariant()
 
-                onOk.run()
+
+                if (errors.size == 0) {
+                    // all is ok
+                    s.saveSettingsForever()
+                    onSaved.run()
+                } else {
+                    // mark the illegal values
+                    labelValue.setText("Value" + if (errors.contains(0, false)) "***" else "")
+                    labelRowsLeft.setText("Rows left" + if (errors.contains(1, false)) "***" else "")
+                    labelColumnsLeft.setText("Columns left" + if (errors.contains(2, false)) "***" else "")
+                    labelColumnsRight.setText("Columns right" + if (errors.contains(3, false)) "***" else "")
+                    labelAnswerAlternatives.setText("Answer alternatives" + if (errors.contains(4, false)) "***" else "")
+                    labelAnswerMaxError.setText("Alternative error" + if (errors.contains(5, false)) "***" else "")
+
+                }
+
             }
         })
 
         val cancel = TextButton("Cancel", skin)
         cancel.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                s.reload()
                 onCancel.run()
             }
         })

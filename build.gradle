@@ -39,6 +39,7 @@ project(":desktop") {
 
 
     dependencies {
+        compile 'junit:junit:4.12'
         compile project(":core")
         compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
@@ -71,15 +72,25 @@ project(":android") {
     }
 }
 
-
 project(":core") {
     apply plugin: "java"
 
 
+    sourceSets.test.java.srcDirs = ["test/"]
+
     dependencies {
-        testCompile 'junit:junit:4.12'
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+
+        testCompile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+
+
+        testCompile "junit:junit:+"
     }
 }
 

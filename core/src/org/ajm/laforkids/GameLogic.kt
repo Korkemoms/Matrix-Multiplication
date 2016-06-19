@@ -14,11 +14,11 @@ import java.util.*
  */
 class GameLogic {
 
-    constructor(settings:Settings){
+    constructor(settings: Settings) {
         this.settings = settings
     }
 
-    val settings:Settings
+    val settings: Settings
 
 
     private var multiplicationTable: ColoredMultiplicationTable? = null
@@ -186,7 +186,7 @@ class GameLogic {
             var error = 0;
             var j = 0
             while ((error == 0 || errors.contains(error, false)) && j++ < 10) {
-                error = random.nextInt(settings.answerMaxError * 2) - settings.answerMaxError
+                error = random.nextInt(Math.max(settings.answerMaxError * 2, 1)) - settings.answerMaxError
             }
             errors.add(error)
             multiplicationTable!!.matrixAnswers.set(0, i, correctAnswer + error)

@@ -15,16 +15,16 @@ import com.badlogic.gdx.utils.Align
 /**
  * Table representing a matrix with integer entries.
  */
-open class Matrix : Table {
+open class Matrix : IMatrix, Table {
 
     /** Whether to draw the matrix left and right outlines. */
-    var drawOutlines = true
+    override var drawOutlines = true
 
     /** The width of the outlines. */
-    var outlineThickness = 5f
+    override var outlineThickness = 5f
 
     /** The padding around each entry. */
-    var entryPad = 0f
+    override var entryPad = 0f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
             for (cell in cells) {
@@ -35,7 +35,7 @@ open class Matrix : Table {
         }
 
     /** The width of each entry. */
-    var entryWidth = 15f
+    override var entryWidth = 15f
         set(value) {
             if (field != value) {
                 mustPack = true
@@ -47,7 +47,7 @@ open class Matrix : Table {
         }
 
     /** The height of each entry. */
-    var entryHeight = 15f
+    override var entryHeight = 15f
         set(value) {
             if (field != value) {
                 mustPack = true
@@ -64,14 +64,14 @@ open class Matrix : Table {
     private var backgroundFont: BitmapFont? = null
 
     /** The width of the text displayed in the background. */
-    var backgroundTextWidth = 0f
+    override var backgroundTextWidth = 0f
 
     /** The height of the text displayed in the background. */
-    var backgroundTextHeight = 0f
+    override var backgroundTextHeight = 0f
 
     /** Text drawn behind the entries. Intended for displaying
      * the name of the matrix, for example: A */
-    var backgroundText = ""
+    override var backgroundText = ""
         set(value) {
             field = value
             val glyphLayout = GlyphLayout(backgroundFont, value)
@@ -80,21 +80,27 @@ open class Matrix : Table {
         }
 
     /** The color of the background text. */
-    var backgroundTextColor = Color(0.9f, 0.9f, 0.9f, 1f)
+    override var backgroundTextColor = Color(0.9f, 0.9f, 0.9f, 1f)
+
+    override val matrixRows: Int
+    override val matrixColumns: Int
 
     /**
      *
      * @param skin needed for the fonts
-     * @param rows number of rows the matrix should have
-     * @param columns number of columns the matrix should have
+     * @param matrixRows number of rows the matrix should have
+     * @param matrixColumns number of columns the matrix should have
      */
-    constructor(skin: Skin, rows: Int, columns: Int) {
+    constructor(skin: Skin, matrixRows: Int, matrixColumns: Int) {
+        this.matrixRows = matrixRows
+        this.matrixColumns = matrixColumns
+
         dot = skin.getRegion("dot")
 
         backgroundFont = skin.get("OpenSans-Large", BitmapFont::class.java)
 
-        for (row in 0 until rows) {
-            for (col in 0 until  columns) {
+        for (row in 0 until matrixRows) {
+            for (col in 0 until  matrixColumns) {
                 val label1 = Label("", skin, "OpenSans-Entry")
 
                 label1.setAlignment(Align.center)
@@ -117,7 +123,7 @@ open class Matrix : Table {
      * @param col the column of the entry
      * @param value toString() is called on this value
      * */
-    fun set(row: Int, col: Int, value: kotlin.Any) {
+    override fun set(row: Int, col: Int, value: kotlin.Any) {
         if (row < 0 || col < 0) throw IllegalArgumentException()
 
         val actor = cells.get(row * columns + col).actor;
@@ -136,7 +142,7 @@ open class Matrix : Table {
      * @param row the row of the entry
      * @param col the column of the entry
      */
-    fun get(row: Int, col: Int): kotlin.String {
+    override fun get(row: Int, col: Int): kotlin.String {
         if (row < 0 || col < 0) throw IllegalArgumentException()
 
         val actor = cells.get(row * columns + col).actor;
@@ -153,7 +159,7 @@ open class Matrix : Table {
      * @param row the row of the entry
      * @param col the column of the entry
      */
-    fun getCell(row: Int, col: Int): Cell<Label>? {
+    override fun getCell(row: Int, col: Int): Cell<Label>? {
         val cell = cells.get(row * columns + col);
         if (cell.actor != null && cell.actor is Label)
             return cell as Cell<Label>
@@ -207,9 +213,9 @@ open class Matrix : Table {
     }
 
     private fun filledRectangle(batch: Batch, x: Float, y: Float, width: Float, height: Float) {
-        batch!!.draw(dot, round(x), round(y), round(width), round(height))
+        batch.draw(dot, round(x), round(y), round(width), round(height))
     }
 
-    fun round(a: Float) = Math.floor(a.toDouble()).toFloat()
+    private fun round(a: Float) = Math.floor(a.toDouble()).toFloat()
 
 }

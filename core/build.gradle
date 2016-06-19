@@ -36,3 +36,4 @@ dependencies {
 sourceSets {
     main.java.srcDirs += 'src/main/kotlin'
 }
+sourceSets.test.java.srcDirs = ["test/"]

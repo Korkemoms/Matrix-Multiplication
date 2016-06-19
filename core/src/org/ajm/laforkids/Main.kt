@@ -32,7 +32,7 @@ class Main {
     var menu: Menu? = null
     var helpFrame: ScrollPane? = null
     val skin = Skin()
-    val settings = Settings()
+    val settings = Settings("Matrix Multiplication")
     val gameLogic = GameLogic(settings)
     var entryFont: BitmapFont? = null
     var font_large: BitmapFont? = null
@@ -169,7 +169,7 @@ class Main {
 
                 // prepare settings interface
                 val settings = SettingsInterface(this@Main)
-                settings.onOk = Runnable { init(true, false) }
+                settings.onSaved = Runnable { init(true, false) }
                 settings.onCancel = Runnable {
                     stage.actors.removeValue(settings, true)
                     multiplicationTable!!.isVisible = true
