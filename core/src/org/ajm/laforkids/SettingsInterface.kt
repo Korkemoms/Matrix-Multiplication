@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
 
 /**
- * Interface for adjusting the settings defined in GameLogic.
+ * Interface for adjusting the settings defined in [Settings].
  */
 class SettingsInterface : ScrollPane {
 

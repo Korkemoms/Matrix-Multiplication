@@ -7,39 +7,23 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import java.util.*
 
-/**
- * Contains 3 matrices that are set up to visualize a matrix multiplication.
- * Also contains a vector with answer alternatives.
- */
-open class MultiplicationTable : Table {
+open class MultiplicationTable : IMultiplicationTable, Table {
 
-    /** A */
-    val matrixLeft: Matrix
-    /** AB=C */
-    val matrixProduct: Matrix
-    /** B */
-    val matrixRight: Matrix
-    /** Vector at the bottom displaying answer alternatives.*/
-    val matrixAnswers: Matrix
-
-    /** Shows the text 'AB=C' */
-    val equationLabel: Label
-
-    /** The number of rows in the left matrix. */
-    val rowsLeft: Int
-    /** The number of columns in the left matrix. Equal to the number of rows in the right matrix.*/
-    val columnsLeft: Int
-    /** The number of rows in the right matrix. Equal to the number of columns in the left matrix. */
-    val rowsRight: Int
-    /** The number of columns in the right matrix. */
-    val columnsRight: Int
-
-    /** The number of entries in the answer alternative vector at the bottom */
-    val answerAlternatives: Int
+    // i don't know why i had to redeclare these values
+    override val matrixLeft: Matrix
+    override val matrixProduct: Matrix
+    override val matrixRight: Matrix
+    override val matrixAnswers: Matrix
+    override val equationLabel: Label
+    override val rowsLeft: Int
+    override val columnsLeft: Int
+    override val rowsRight: Int
+    override val columnsRight: Int
+    override val answerAlternatives: Int
 
     /** The height of each entry, in all matrices and also the answer vector. May be overridden by
      * accessing the individual matrices and could therefore be incorrect. */
-    var entryHeight = 0f
+    override var entryHeight = 0f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
             field = value
@@ -52,7 +36,7 @@ open class MultiplicationTable : Table {
 
     /** The width of each entry, in all matrices and also the answer vector. May be overridden by
      * accessing the individual matrices and could therefore be incorrect. */
-    var entryWidth = 0f
+    override var entryWidth = 0f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
             field = value
@@ -65,7 +49,7 @@ open class MultiplicationTable : Table {
 
     /** The padding inside each matrix boundary. May be overridden by
      * accessing the individual matrices and could therefore be incorrect. */
-    var matrixInsidePad = 0f
+    override var matrixInsidePad = 0f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
             field = value
@@ -85,7 +69,7 @@ open class MultiplicationTable : Table {
 
     /** The padding outside each matrix boundary. May be overridden by
      * accessing the individual matrices and could therefore be incorrect. */
-    var matrixOutsidePad = 0f
+    override var matrixOutsidePad = 0f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
             field = value
@@ -101,7 +85,7 @@ open class MultiplicationTable : Table {
 
     /** The padding around each entry of each matrix. May be overridden by
      * accessing the individual matrices and could therefore be incorrect. */
-    var matrixEntryPad = 0f
+    override var matrixEntryPad = 0f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
             field = value
@@ -126,6 +110,14 @@ open class MultiplicationTable : Table {
      * @param answerAlternatives the number of answer buttons to choose from
      */
     constructor(skin: Skin, rowsLeft: Int, columnsLeft: Int, columnsRight: Int, answerAlternatives: Int) {
+        if (rowsLeft < 1) throw IllegalArgumentException()
+        if (columnsLeft < 1) throw IllegalArgumentException()
+        if (columnsRight < 1) throw IllegalArgumentException()
+        if (answerAlternatives < 1) throw IllegalArgumentException()
+
+
+
+
         this.skin = skin
         this.rowsLeft = rowsLeft
         this.columnsLeft = columnsLeft
@@ -159,62 +151,6 @@ open class MultiplicationTable : Table {
         matrixLeft.backgroundText = "A"
         matrixRight.backgroundText = "B"
         matrixProduct.backgroundText = "C"
-    }
-
-    /** Copy the entry values from all the matrices of given multiplication table.
-     * @param multiplicationTable the one to copy all the entries from
-     * */
-    open fun copyEntries(multiplicationTable: MultiplicationTable) {
-
-        for (row in 0 until  rowsLeft) {
-            for (col in 0 until  columnsLeft) {
-                matrixLeft.set(row, col, multiplicationTable.matrixLeft.get(row, col))
-            }
-        }
-
-        for (row in 0 until rowsLeft) {
-            for (col in 0 until  columnsRight) {
-                matrixProduct.set(row, col, multiplicationTable.matrixProduct.get(row, col))
-            }
-        }
-
-        for (row in 0 until rowsRight) {
-            for (col in 0 until  columnsRight) {
-                matrixRight.set(row, col, multiplicationTable.matrixRight.get(row, col))
-            }
-        }
-
-        for (col in 0 until matrixAnswers.columns) {
-            matrixAnswers.set(0, col, multiplicationTable.matrixAnswers.get(0, col))
-        }
-    }
-
-    /**
-     * Randomize the entries in the left and right matrix, erase the entries in the product matrix.
-     * @param min the smallest possible value
-     * @param max the largest possible value
-     */
-    fun randomizeEntries(min: Int, max: Int) {
-        val random = Random()
-
-        for (row in 0 until  rowsLeft) {
-            for (col in 0 until  columnsLeft) {
-                matrixLeft.set(row, col, random.nextInt(max - min + 1) + min)
-            }
-        }
-
-        for (row in 0 until rowsRight) {
-            for (col in 0 until  columnsRight) {
-                matrixRight.set(row, col, random.nextInt(max - min + 1) + min)
-            }
-        }
-
-        for (row in 0 until rowsLeft) {
-            for (col in 0 until  columnsRight) {
-                matrixProduct.set(row, col, "")
-            }
-        }
-
     }
 
     override fun draw(batch: Batch?, parentAlpha: Float) {

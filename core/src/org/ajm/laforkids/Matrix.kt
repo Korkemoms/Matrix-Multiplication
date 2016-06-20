@@ -22,6 +22,10 @@ open class Matrix : IMatrix, Table {
 
     /** The width of the outlines. */
     override var outlineThickness = 5f
+        set(value) {
+            if (value < 0) throw IllegalArgumentException()
+            field = value
+        }
 
     /** The padding around each entry. */
     override var entryPad = 0f
@@ -37,6 +41,7 @@ open class Matrix : IMatrix, Table {
     /** The width of each entry. */
     override var entryWidth = 15f
         set(value) {
+            if (value < 0) throw IllegalArgumentException()
             if (field != value) {
                 mustPack = true
                 for (cell in cells)
@@ -49,6 +54,7 @@ open class Matrix : IMatrix, Table {
     /** The height of each entry. */
     override var entryHeight = 15f
         set(value) {
+            if (value < 0) throw IllegalArgumentException()
             if (field != value) {
                 mustPack = true
                 for (cell in cells)
@@ -65,9 +71,17 @@ open class Matrix : IMatrix, Table {
 
     /** The width of the text displayed in the background. */
     override var backgroundTextWidth = 0f
+        set(value) {
+            if (value < 0) throw IllegalArgumentException()
+            field = value
+        }
 
     /** The height of the text displayed in the background. */
     override var backgroundTextHeight = 0f
+        set(value) {
+            if (value < 0) throw IllegalArgumentException()
+            field = value
+        }
 
     /** Text drawn behind the entries. Intended for displaying
      * the name of the matrix, for example: A */
@@ -92,6 +106,9 @@ open class Matrix : IMatrix, Table {
      * @param matrixColumns number of columns the matrix should have
      */
     constructor(skin: Skin, matrixRows: Int, matrixColumns: Int) {
+        if (matrixRows < 1) throw IllegalArgumentException()
+        if (matrixColumns < 1) throw IllegalArgumentException()
+
         this.matrixRows = matrixRows
         this.matrixColumns = matrixColumns
 
@@ -160,6 +177,8 @@ open class Matrix : IMatrix, Table {
      * @param col the column of the entry
      */
     override fun getCell(row: Int, col: Int): Cell<Label>? {
+        if (row < 0 || col < 0) throw IllegalArgumentException()
+
         val cell = cells.get(row * columns + col);
         if (cell.actor != null && cell.actor is Label)
             return cell as Cell<Label>

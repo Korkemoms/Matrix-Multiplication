@@ -17,6 +17,83 @@ import java.util.*
 class MatrixTest {
     val random = Random()
 
+    /**
+     * Test that the functions reject values that make no sense.
+     */
+    @Test
+    fun illegalArgumentTest1() {
+        val skin = DesktopLauncher.skin!!
+
+        val rows = random.nextInt(100) + 1
+        val columns = random.nextInt(100) + 1
+
+        val matrix: IMatrix = Matrix(skin, rows, columns)
+
+        for (i in 0 until 100) {
+            assertIllegalArgumentExceptionThrown {
+                matrix.set(-random.nextInt(100) - 1, -random.nextInt(100) - 1, random.nextLong())
+            }
+        }
+        for (i in 0 until 100) {
+            assertIllegalArgumentExceptionThrown {
+                matrix.get(-random.nextInt(100) - 1, -random.nextInt(100) - 1)
+            }
+        }
+        for (i in 0 until 100) {
+            assertIllegalArgumentExceptionThrown {
+                matrix.getCell(-random.nextInt(100) - 1, -random.nextInt(100) - 1)
+            }
+        }
+    }
+
+    /**
+     * Test that the variables reject values that make no sense.
+     */
+    @Test
+    fun illegalArgumentTest2() {
+        val skin = DesktopLauncher.skin!!
+        val rows = random.nextInt(100) + 1
+        val columns = random.nextInt(100) + 1
+
+        val matrix: IMatrix = Matrix(skin, rows, columns)
+
+        for (i in 0 until 100) {
+            assertIllegalArgumentExceptionThrown {
+                matrix.outlineThickness = -(0.00001f + random.nextFloat()) * 100f
+            }
+            assertIllegalArgumentExceptionThrown {
+                matrix.entryPad = -(0.00001f + random.nextFloat()) * 100f
+            }
+            assertIllegalArgumentExceptionThrown {
+                matrix.entryWidth = -(0.00001f + random.nextFloat()) * 100f
+            }
+            assertIllegalArgumentExceptionThrown {
+                matrix.entryHeight = -(0.00001f + random.nextFloat()) * 100f
+            }
+            assertIllegalArgumentExceptionThrown {
+                matrix.backgroundTextWidth = -(0.00001f + random.nextFloat()) * 100f
+            }
+            assertIllegalArgumentExceptionThrown {
+                matrix.backgroundTextHeight = -(0.00001f + random.nextFloat()) * 100f
+            }
+        }
+    }
+
+    /**
+     * Test that the constructor reject values that make no sense.
+     */
+    @Test
+    fun illegalArgumentTest3() {
+        val skin = DesktopLauncher.skin!!
+
+        for (i in 0 until 100) {
+            val rows = -random.nextInt(100)
+            val columns = -random.nextInt(100)
+
+            assertIllegalArgumentExceptionThrown { Matrix(skin, rows, columns) }
+        }
+
+    }
 
     @Test
     fun setGet1() {
@@ -79,10 +156,10 @@ class MatrixTest {
         val rows = random.nextInt(100) + 1
         val columns = random.nextInt(100) + 1
 
-
         val matrix: IMatrix = Matrix(skin, rows, columns)
         val control = IntArray(rows * columns)
 
+        // test set get on each entry
         for (row in 0 until rows) {
             for (col in 0 until columns) {
                 val i = random.nextInt()
@@ -95,10 +172,10 @@ class MatrixTest {
             for (col in 0 until columns) {
                 val expected = control[row * columns + col].toString()
                 val actual = matrix.get(row, col)
-                val actual2 = matrix.getCell(row,col)!!.actor.text.toString()
+                val actual2 = matrix.getCell(row, col)!!.actor.text.toString()
 
-                Assert.assertEquals(expected,actual)
-                Assert.assertEquals(expected,actual2)
+                Assert.assertEquals(expected, actual)
+                Assert.assertEquals(expected, actual2)
 
 
             }

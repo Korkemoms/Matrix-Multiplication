@@ -35,6 +35,11 @@ object DesktopLauncher {
         failures.addAll(results.failures)
         total += results.runCount
 
+        results = core.run(MultiplicationTableTest::class.java)
+        failures.addAll(results.failures)
+        total += results.runCount
+
+
         println(total.toString() + " tests have been run.\n" + failures.size.toString() + " tests failed:")
 
         for (failure in failures) {
