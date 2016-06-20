@@ -14,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 /**
  * Also draws some colored rectangles for helping the player compute.
  */
-class ColoredMultiplicationTable : MultiplicationTable {
+class ColoredMultiplicationTable : IMultiplicationTable, MultiplicationTable {
 
     // settings, all can be changed
     var interpolationMethod = Interpolation.pow3Out

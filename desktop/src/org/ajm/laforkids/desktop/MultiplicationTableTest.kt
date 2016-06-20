@@ -1,33 +1,46 @@
 package org.ajm.laforkids.desktop
 
+import org.ajm.laforkids.ColoredMultiplicationTable
 import org.ajm.laforkids.IMultiplicationTable
 import org.ajm.laforkids.MultiplicationTable
 import org.junit.Assert
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.util.*
 
 /**
- * Test the properties of [MultiplicationTable] defined in [IMultiplicationTable].
+ * Test the properties of [MultiplicationTable] and [ColoredMultiplicationTable] defined in [IMultiplicationTable].
+ * Each test function is run two times, once where the factory generates [MultiplicationTable],
+ * and once where the factory generates [ColoredMultiplicationTable].
  */
-class MultiplicationTableTest {
+@RunWith(Parameterized::class)
+class MultiplicationTableTest(val factory: MultiplicationTableFactory<*>) {
 
     val random = Random()
+
+    /**
+     * Gives the test functions access to a [MultiplicationTableFactory].
+     */
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters
+        fun data(): Collection<Array<Any>> {
+
+            val factory1 = MultiplicationTableFactory<MultiplicationTable>(MultiplicationTable::class.java) as Any
+            val factory2 = MultiplicationTableFactory<ColoredMultiplicationTable>(ColoredMultiplicationTable::class.java) as Any
+
+            return listOf(arrayOf(factory1), arrayOf(factory2))
+        }
+    }
+
 
     /**
      * Test that the variables reject values that make no sense.
      */
     @Test
     fun illegalArguments1() {
-        val skin = DesktopLauncher.skin!!
-
-        val rowsLeft = random.nextInt(100) + 1
-        val columnsLeft = random.nextInt(100) + 1
-        val columnsRight = random.nextInt(100) + 1
-        val answerAlternatives = random.nextInt(100) + 1
-
-        val table: IMultiplicationTable = MultiplicationTable(skin,
-                rowsLeft, columnsLeft, columnsRight, answerAlternatives)
-
+        val table = factory.create(DesktopLauncher.skin!!)
 
         assertIllegalArgumentExceptionThrown({
             table.entryHeight = -(random.nextFloat() + 0.00001f) * 100f
@@ -63,12 +76,10 @@ class MultiplicationTableTest {
 
             if (rowsLeft < 1 || columnsLeft < 1 || columnsRight < 1 || answerAlternatives < 1) {
                 assertIllegalArgumentExceptionThrown({
-                    MultiplicationTable(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
+                    factory.create(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
                 })
             }
         }
-
-
     }
 
     /**
@@ -84,8 +95,7 @@ class MultiplicationTableTest {
         var columnsRight = random.nextInt(100) + 1
         var answerAlternatives = random.nextInt(100) + 1
 
-        val table1: IMultiplicationTable = MultiplicationTable(skin,
-                rowsLeft, columnsLeft, columnsRight, answerAlternatives)
+        val table1 = factory.create(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
 
         while (rowsLeft == table1.rowsLeft && columnsLeft == table1.columnsLeft &&
                 columnsRight == table1.columnsRight) {
@@ -97,12 +107,9 @@ class MultiplicationTableTest {
 
         }
 
-        val table2: IMultiplicationTable = MultiplicationTable(skin,
-                rowsLeft, columnsLeft, columnsRight, answerAlternatives)
+        val table2 = factory.create(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
 
         assertIllegalArgumentExceptionThrown({ table1.copyEntries(table2) })
-
-
     }
 
     @Test
@@ -114,7 +121,7 @@ class MultiplicationTableTest {
         val columnsRight = random.nextInt(100) + 1
         val answerAlternatives = random.nextInt(100) + 1
 
-        val multiplicationTable: IMultiplicationTable = MultiplicationTable(skin,
+        val multiplicationTable = factory.create(skin,
                 rowsLeft, columnsLeft, columnsRight, answerAlternatives)
 
         // test constructor
@@ -155,9 +162,9 @@ class MultiplicationTableTest {
         val columnsRight = random.nextInt(100) + 1
         val answerAlternatives = random.nextInt(100) + 1
 
-        val table1: IMultiplicationTable = MultiplicationTable(skin,
+        val table1 = factory.create(skin,
                 rowsLeft, columnsLeft, columnsRight, answerAlternatives)
-        val table2: IMultiplicationTable = MultiplicationTable(skin,
+        val table2 = factory.create(skin,
                 rowsLeft, columnsLeft, columnsRight, answerAlternatives)
 
 
