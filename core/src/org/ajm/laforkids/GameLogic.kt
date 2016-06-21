@@ -18,8 +18,7 @@ class GameLogic {
         this.settings = settings
     }
 
-    val settings: Settings
-
+    private val settings: Settings
 
     private var multiplicationTable: ColoredMultiplicationTable? = null
 

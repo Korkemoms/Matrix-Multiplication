@@ -1,7 +1,6 @@
 package org.ajm.laforkids.desktop
 
 import org.ajm.laforkids.ColoredMultiplicationTable
-import org.ajm.laforkids.IMultiplicationTable
 import org.ajm.laforkids.MultiplicationTable
 import org.junit.Assert
 import org.junit.Test
@@ -27,13 +26,12 @@ class MultiplicationTableTest(val factory: MultiplicationTableFactory<*>) {
         @Parameterized.Parameters
         fun data(): Collection<Array<Any>> {
 
-            val factory1 = MultiplicationTableFactory<MultiplicationTable>(MultiplicationTable::class.java) as Any
-            val factory2 = MultiplicationTableFactory<ColoredMultiplicationTable>(ColoredMultiplicationTable::class.java) as Any
+            val factory1 = MultiplicationTableFactory<MultiplicationTable>(MultiplicationTable::class.java)
+            val factory2 = MultiplicationTableFactory<ColoredMultiplicationTable>(ColoredMultiplicationTable::class.java)
 
-            return listOf(arrayOf(factory1), arrayOf(factory2))
+            return listOf(arrayOf(factory1 as Any), arrayOf(factory2 as Any))
         }
     }
-
 
     /**
      * Test that the variables reject values that make no sense.

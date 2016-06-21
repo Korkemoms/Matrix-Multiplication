@@ -6,15 +6,19 @@ import org.ajm.laforkids.IMultiplicationTable
 import org.ajm.laforkids.MultiplicationTable
 import java.util.*
 
-class MultiplicationTableFactory<T>(val klass: Class<T>) {
+/**
+ * This factory facilitates testing of [MultiplicationTable] and [ColoredMultiplicationTable] with the same
+ * code.
+ */
+class MultiplicationTableFactory<T : IMultiplicationTable>(val klass: Class<T>) {
+
+    val a = klass.isAssignableFrom(ColoredMultiplicationTable::class.java)
+    val b = klass.isAssignableFrom(MultiplicationTable::class.java)
 
     /**
      * Create a [IMultiplicationTable] of class T with random specifications.
      */
     fun create(skin: Skin): IMultiplicationTable {
-
-        val a = klass.isAssignableFrom(ColoredMultiplicationTable::class.java)
-        val b = klass.isAssignableFrom(MultiplicationTable::class.java)
 
         val random = Random()
 
@@ -31,9 +35,6 @@ class MultiplicationTableFactory<T>(val klass: Class<T>) {
      * Create a [IMultiplicationTable] of class T with given specifications.
      */
     fun create(skin: Skin, rowsLeft: Int, columnsLeft: Int, columnsRight: Int, answerAlternatives: Int): IMultiplicationTable {
-
-        val a = klass.isAssignableFrom(ColoredMultiplicationTable::class.java)
-        val b = klass.isAssignableFrom(MultiplicationTable::class.java)
 
         if (b) {
             return MultiplicationTable(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
