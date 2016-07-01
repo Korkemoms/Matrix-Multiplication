@@ -30,17 +30,17 @@ class MatrixTest {
         val matrix: IMatrix = Matrix(skin, rows, columns)
 
         for (i in 0 until 100) {
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.set(-random.nextInt(100) - 1, -random.nextInt(100) - 1, random.nextLong())
             }
         }
         for (i in 0 until 100) {
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.get(-random.nextInt(100) - 1, -random.nextInt(100) - 1)
             }
         }
         for (i in 0 until 100) {
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.getCell(-random.nextInt(100) - 1, -random.nextInt(100) - 1)
             }
         }
@@ -58,22 +58,22 @@ class MatrixTest {
         val matrix: IMatrix = Matrix(skin, rows, columns)
 
         for (i in 0 until 100) {
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.outlineThickness = -(0.00001f + random.nextFloat()) * 100f
             }
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.entryPad = -(0.00001f + random.nextFloat()) * 100f
             }
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.entryWidth = -(0.00001f + random.nextFloat()) * 100f
             }
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.entryHeight = -(0.00001f + random.nextFloat()) * 100f
             }
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.backgroundTextWidth = -(0.00001f + random.nextFloat()) * 100f
             }
-            assertIllegalArgumentExceptionThrown {
+            assertExceptionThrown {
                 matrix.backgroundTextHeight = -(0.00001f + random.nextFloat()) * 100f
             }
         }
@@ -90,7 +90,7 @@ class MatrixTest {
             val rows = -random.nextInt(100)
             val columns = -random.nextInt(100)
 
-            assertIllegalArgumentExceptionThrown { Matrix(skin, rows, columns) }
+            assertExceptionThrown { Matrix(skin, rows, columns) }
         }
 
     }

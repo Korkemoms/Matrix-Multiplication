@@ -10,31 +10,39 @@ import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 
-
 /**
+ * Contains 3 matrices that are set up to visualize a matrix multiplication.
+ * Also contains a vector with answer alternatives.
  * Also draws some colored rectangles for helping the player compute.
  */
-class ColoredMultiplicationTable : IMultiplicationTable, MultiplicationTable {
+class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTable {
 
     // settings, all can be changed
     var interpolationMethod = Interpolation.pow3Out
     var selectionColor = Color.FOREST
-    var highlight = true
+    override var highlight = true
     var interpolationTime = 0.5f
         set(value) {
             if (value <= 0) throw IllegalArgumentException()
             field = value
         }
-    var highlightRow = 0
+
+    override var highlightRow = 0
         set(value) {
             if (value < 0) throw IllegalArgumentException()
+            if (value >= matrixLeft.rows) throw IllegalArgumentException()
             field = value
+            beginAnimation()
         }
-    var highlightCol = 0
+
+    override var highlightCol = 0
         set(value) {
             if (value < 0) throw IllegalArgumentException()
+            if (value >= matrixRight.columns) throw IllegalArgumentException()
             field = value
+            beginAnimation()
         }
+
     var outlineThickness = 5f
         set(value) {
             if (value < 0) throw IllegalArgumentException()
@@ -94,7 +102,7 @@ class ColoredMultiplicationTable : IMultiplicationTable, MultiplicationTable {
      * Start the animation that moves the helping rectangles
      * to their correct position.
      */
-    fun beginAnimation() {
+    private fun beginAnimation() {
         doneAnimating = false
         beganAnimation = System.currentTimeMillis()
     }

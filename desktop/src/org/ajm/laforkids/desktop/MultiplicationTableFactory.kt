@@ -10,7 +10,7 @@ import java.util.*
  * This factory facilitates testing of [MultiplicationTable] and [ColoredMultiplicationTable] with the same
  * code.
  */
-class MultiplicationTableFactory<T : IMultiplicationTable>(val klass: Class<T>) {
+class MultiplicationTableFactory<T : IMultiplicationTable>(klass: Class<T>) {
 
     val a = klass.isAssignableFrom(ColoredMultiplicationTable::class.java)
     val b = klass.isAssignableFrom(MultiplicationTable::class.java)

@@ -6,9 +6,10 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import org.ajm.laforkids.Adapter
 import org.ajm.laforkids.Main
+import org.junit.runner.Description
 import org.junit.runner.JUnitCore
-import org.junit.runner.Result
 import org.junit.runner.notification.Failure
+import org.junit.runner.notification.RunListener
 import java.util.*
 
 /**
@@ -19,26 +20,35 @@ object DesktopLauncher {
 
     var skin: Skin? = null
 
+    val testClasses: com.badlogic.gdx.utils.Array<Class<*>> = com.badlogic.gdx.utils.Array<Class<*>>()
+
+    init {
+        testClasses.add(SettingsTest::class.java)
+        testClasses.add(MatrixTest::class.java)
+        testClasses.add(MultiplicationTableTest::class.java)
+        testClasses.add(GameLogicTest::class.java)
+
+    }
+
     fun allTests(main: Main) {
         skin = main.skin
 
         val core = JUnitCore()
 
+        core.addListener(object : RunListener() {
+            override fun testFinished(description: Description?) {
+                println(description!!.className + ": " + description.methodName)
+            }
+        })
+
         val failures = ArrayList<Failure>()
         var total = 0
 
-        var results = core.run(SettingsTest::class.java)
-        failures.addAll(results.failures)
-        total += results.runCount
-
-        results = core.run(MatrixTest::class.java)
-        failures.addAll(results.failures)
-        total += results.runCount
-
-        results = core.run(MultiplicationTableTest::class.java)
-        failures.addAll(results.failures)
-        total += results.runCount
-
+        for (klass in testClasses) {
+            val results = core.run(klass)
+            failures.addAll(results.failures)
+            total += results.runCount
+        }
 
         println(total.toString() + " tests have been run.\n" + failures.size.toString() + " tests failed:")
 

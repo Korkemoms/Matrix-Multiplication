@@ -13,12 +13,16 @@ class Settings {
 
     val SETTING_MIN_VALUE = "minValue"
     val SETTING_MAX_VALUE = "maxValue"
+
     val SETTING_MIN_ROWS_LEFT = "minRowsLeft"
     val SETTING_MAX_ROWS_LEFT = "maxRowsLeft"
+
     val SETTING_MIN_COLUMNS_LEFT = "minColumnsLeft"
     val SETTING_MAX_COLUMNS_LEFT = "maxColumnsLeft"
+
     val SETTING_MIN_COLUMNS_RIGHT = "minColumnsRight"
     val SETTING_MAX_COLUMNS_RIGHT = "maxColumnsRight"
+
     val SETTING_ANSWER_ALTERNATIVES = "answerAlternatives"
     val SETTING_ANSWER_MAX_ERROR = "answerMaxError"
 
@@ -94,10 +98,6 @@ class Settings {
     /** The maximum error of the answer alternatives. */
     var answerMaxError: Int
 
-
-    fun decodeError(error: Int) {
-        if (error == 0) return
-    }
 
     /**
      * Checks if the current settings make sense. For every setting that

@@ -40,19 +40,19 @@ class MultiplicationTableTest(val factory: MultiplicationTableFactory<*>) {
     fun illegalArguments1() {
         val table = factory.create(DesktopLauncher.skin!!)
 
-        assertIllegalArgumentExceptionThrown({
+        assertExceptionThrown({
             table.entryHeight = -(random.nextFloat() + 0.00001f) * 100f
         })
-        assertIllegalArgumentExceptionThrown({
+        assertExceptionThrown({
             table.entryWidth = -(random.nextFloat() + 0.00001f) * 100f
         })
-        assertIllegalArgumentExceptionThrown({
+        assertExceptionThrown({
             table.matrixInsidePad = -(random.nextFloat() + 0.00001f) * 100f
         })
-        assertIllegalArgumentExceptionThrown({
+        assertExceptionThrown({
             table.matrixOutsidePad = -(random.nextFloat() + 0.00001f) * 100f
         })
-        assertIllegalArgumentExceptionThrown({
+        assertExceptionThrown({
             table.matrixEntryPad = -(random.nextFloat() + 0.00001f) * 100f
         })
 
@@ -73,7 +73,7 @@ class MultiplicationTableTest(val factory: MultiplicationTableFactory<*>) {
             val answerAlternatives = 50 - random.nextInt(100)
 
             if (rowsLeft < 1 || columnsLeft < 1 || columnsRight < 1 || answerAlternatives < 1) {
-                assertIllegalArgumentExceptionThrown({
+                assertExceptionThrown({
                     factory.create(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
                 })
             }
@@ -107,7 +107,7 @@ class MultiplicationTableTest(val factory: MultiplicationTableFactory<*>) {
 
         val table2 = factory.create(skin, rowsLeft, columnsLeft, columnsRight, answerAlternatives)
 
-        assertIllegalArgumentExceptionThrown({ table1.copyEntries(table2) })
+        assertExceptionThrown({ table1.init(table2) })
     }
 
     @Test
@@ -167,7 +167,7 @@ class MultiplicationTableTest(val factory: MultiplicationTableFactory<*>) {
 
 
         // test the copy functionality
-        table1.copyEntries(table2)
+        table1.init(table2)
 
         for (row in 0 until  rowsLeft) {
             for (col in 0 until  columnsLeft) {

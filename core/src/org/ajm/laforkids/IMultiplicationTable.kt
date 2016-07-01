@@ -1,10 +1,6 @@
 package org.ajm.laforkids
 
-import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.badlogic.gdx.utils.Align
 import java.util.*
 
 /**
@@ -13,6 +9,7 @@ import java.util.*
  */
 interface IMultiplicationTable {
 
+    var initialized:Boolean
     /** A */
     val matrixLeft: Matrix
     /** AB=C */
@@ -59,33 +56,33 @@ interface IMultiplicationTable {
 
 
     /** Copy the entry values from all the matrices of given multiplication table.
-     * @param multiplicationTable the one to copy all the entries from
+     * @param copyFrom the one to copy all the entries from
      * */
-    open fun copyEntries(multiplicationTable: IMultiplicationTable) {
-        if (rowsLeft != multiplicationTable.rowsLeft) throw IllegalArgumentException()
-        if (columnsLeft != multiplicationTable.columnsLeft) throw IllegalArgumentException()
-        if (columnsRight != multiplicationTable.columnsRight) throw IllegalArgumentException()
+    fun init(copyFrom: IMultiplicationTable) {
+        if (rowsLeft != copyFrom.rowsLeft) throw IllegalArgumentException()
+        if (columnsLeft != copyFrom.columnsLeft) throw IllegalArgumentException()
+        if (columnsRight != copyFrom.columnsRight) throw IllegalArgumentException()
 
         for (row in 0 until  rowsLeft) {
             for (col in 0 until  columnsLeft) {
-                matrixLeft.set(row, col, multiplicationTable.matrixLeft.get(row, col))
+                matrixLeft.set(row, col, copyFrom.matrixLeft.get(row, col))
             }
         }
 
         for (row in 0 until rowsLeft) {
             for (col in 0 until  columnsRight) {
-                matrixProduct.set(row, col, multiplicationTable.matrixProduct.get(row, col))
+                matrixProduct.set(row, col, copyFrom.matrixProduct.get(row, col))
             }
         }
 
         for (row in 0 until rowsRight) {
             for (col in 0 until  columnsRight) {
-                matrixRight.set(row, col, multiplicationTable.matrixRight.get(row, col))
+                matrixRight.set(row, col, copyFrom.matrixRight.get(row, col))
             }
         }
 
         for (col in 0 until matrixAnswers.columns) {
-            matrixAnswers.set(0, col, multiplicationTable.matrixAnswers.get(0, col))
+            matrixAnswers.set(0, col, copyFrom.matrixAnswers.get(0, col))
         }
     }
 
@@ -94,7 +91,7 @@ interface IMultiplicationTable {
      * @param min the smallest possible value
      * @param max the largest possible value
      */
-    fun randomizeEntries(min: Int, max: Int) {
+    fun init(min: Int, max: Int) {
         val random = Random()
 
         for (row in 0 until  rowsLeft) {

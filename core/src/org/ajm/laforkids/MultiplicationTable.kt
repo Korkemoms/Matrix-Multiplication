@@ -5,11 +5,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
-import java.util.*
 
 open class MultiplicationTable : IMultiplicationTable, Table {
 
     // i don't know why i had to redeclare these values
+    override var initialized: Boolean = false
     override val matrixLeft: Matrix
     override val matrixProduct: Matrix
     override val matrixRight: Matrix
@@ -96,7 +96,6 @@ open class MultiplicationTable : IMultiplicationTable, Table {
             mustPack = true
         }
 
-
     private val table: Table
     private var mustPack = false
 
@@ -114,9 +113,6 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         if (columnsLeft < 1) throw IllegalArgumentException()
         if (columnsRight < 1) throw IllegalArgumentException()
         if (answerAlternatives < 1) throw IllegalArgumentException()
-
-
-
 
         this.skin = skin
         this.rowsLeft = rowsLeft
@@ -151,6 +147,16 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         matrixLeft.backgroundText = "A"
         matrixRight.backgroundText = "B"
         matrixProduct.backgroundText = "C"
+    }
+
+    override fun init(copyFrom: IMultiplicationTable) {
+        super.init(copyFrom)
+        initialized = true
+    }
+
+    override fun init(min: Int, max: Int) {
+        super.init(min, max)
+        initialized = true
     }
 
     override fun draw(batch: Batch?, parentAlpha: Float) {

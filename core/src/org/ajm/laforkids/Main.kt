@@ -33,11 +33,10 @@ class Main {
     var helpFrame: ScrollPane? = null
     val skin = Skin()
     val settings = Settings("Matrix Multiplication")
-    val gameLogic = GameLogic(settings)
+    val gameIterator = GameIterator(settings)
     var entryFont: BitmapFont? = null
     var font_large: BitmapFont? = null
     var defaultFont: BitmapFont? = null
-
 
 
     private val generator = SmartFontGenerator(Gdx.files.internal("OpenSans.ttf"))
@@ -69,8 +68,8 @@ class Main {
         stage.viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
         stage.clear()
 
-        val gl = gameLogic
-        if (newGame) gl.newGame()
+        val gl = gameIterator.gameLogic
+        if (newGame) gameIterator.newGame()
 
         // determine some visual details
         val columns = gl.columnsLeft + gl.columnsRight;
@@ -85,7 +84,7 @@ class Main {
         val pad = matrixInsidePad + matrixOutsidePad
 
         val entryWidth = (Gdx.graphics.width.toFloat() * screenFill - pad * 4 - columns * entryPad * 2) /
-                Math.max(columns, settings.answerAlternatives).toFloat()
+                Math.max(columns, gl.answerAlternatives).toFloat()
         val entryHeight = (Gdx.graphics.height.toFloat() * screenFill - pad * 6 - rows * entryPad * 2) / rows.toFloat()
 
 
@@ -138,7 +137,7 @@ class Main {
 
         // prepare a new multiplication table
         multiplicationTable = ColoredMultiplicationTable(skin,
-                gl.rowsLeft, gl.columnsLeft, gl.columnsRight, settings.answerAlternatives)
+                gl.rowsLeft, gl.columnsLeft, gl.columnsRight, gl.answerAlternatives)
         multiplicationTable!!.interpolationMethod = interpolationMethod
         multiplicationTable!!.interpolationTime = interpolationTime
         multiplicationTable!!.entryWidth = entryWidth
@@ -149,13 +148,13 @@ class Main {
         multiplicationTable!!.outlineThickness = outlineThickness
         multiplicationTable!!.matrixEntryPad = entryPad
         multiplicationTable!!.setFillParent(true)
-        multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / settings.answerAlternatives.toFloat()
+        multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / gl.answerAlternatives.toFloat()
         multiplicationTable!!.matrixAnswers.entryPad = 0f
         stage.addActor(multiplicationTable!!)
 
 
         // connect the game logic to the new MultiplicationTable
-        gl.connect(multiplicationTable!!, this, newGame)
+        gameIterator.init(multiplicationTable!!, this, newGame)
 
 
         // add settings functionality
@@ -188,36 +187,38 @@ class Main {
     /**
      * Show a message on the bottom of the screen. It is removed the next time the user clicks anywhere.
      */
-    fun showMessage(message: String) {
+    fun showMessage(message: String, buttonText: String = "Ok", onOk: () -> Unit = {}) {
         // remove previous just in case
         stage.actors.removeValue(helpFrame, true)
 
-        // prepare table with message and a button that does nothing
-        val label = Label(message, skin)
-        val button = Label("Ok", skin)
-        val table = Table()
-        table.add(label).row()
-        table.add(button)
-        table.background = skin.getDrawable("dot")
+        Gdx.app.postRunnable {
+            // prepare table with message and a button that does nothing
+            val label = Label(message, skin)
+            val button = Label(buttonText, skin)
+            val table = Table()
+            table.add(label).row()
+            table.add(button)
+            table.background = skin.getDrawable("dot")
 
-        // put it in ScrollPane in case the message is too big
-        helpFrame = ScrollPane(table)
+            // put it in ScrollPane in case the message is too big
+            helpFrame = ScrollPane(table)
 
-        // add to the bottom of the stage
-        stage.addActor(helpFrame)
-        helpFrame!!.setOverscroll(false, false)
-        helpFrame!!.setPosition(0f, 0f)
-        helpFrame!!.height = multiplicationTable!!.matrixAnswers.height
-        helpFrame!!.width = stage.width
+            // add to the bottom of the stage
+            stage.addActor(helpFrame)
+            helpFrame!!.setOverscroll(false, false)
+            helpFrame!!.setPosition(0f, 0f)
+            helpFrame!!.height = multiplicationTable!!.matrixAnswers.height
+            helpFrame!!.width = stage.width
 
-        // when user clicks anywhere remove the message
-        stage.addListener(object : ClickListener() {
-            override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                stage.actors.removeValue(helpFrame, true)
-                stage.removeListener (this)
-            }
-        })
-
+            // when user clicks anywhere remove the message
+            stage.addListener(object : ClickListener() {
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    stage.actors.removeValue(helpFrame, true)
+                    stage.removeListener(this)
+                    onOk.invoke()
+                }
+            })
+        }
     }
 
     fun render() {
