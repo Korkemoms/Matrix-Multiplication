@@ -1,9 +1,8 @@
-package org.ajm.laforkids.desktop
+package org.ajm.laforkids.desktop.tests
 
-import org.ajm.laforkids.ColoredMultiplicationTable
+import org.ajm.laforkids.actors.ColoredMultiplicationTable
 import org.ajm.laforkids.GameLogic
-import org.ajm.laforkids.IColoredMultiplicationTable
-import org.ajm.laforkids.Settings
+import org.ajm.laforkids.desktop.DesktopLauncher
 import org.junit.Assert
 import org.junit.Test
 import java.util.*
@@ -32,7 +31,7 @@ class GameLogicTest {
             gameLogic.init(multiplicationTable)
 
 
-            for (i in 0 until gameLogic.maxProgress()) {
+            for (j in 0 until gameLogic.maxProgress()) {
                 Assert.assertFalse(gameLogic.isComplete())
                 gameLogic.updateAnswerAlternatives()
                 gameLogic.progress()

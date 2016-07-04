@@ -1,4 +1,4 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
+import org.ajm.laforkids.actors.IMatrix
 
 /**
  * Table representing a matrix with integer entries.
@@ -48,7 +49,7 @@ open class Matrix : IMatrix, Table {
                     cell.width(value)
             }
 
-            field = value;
+            field = value
         }
 
     /** The height of each entry. */
@@ -61,7 +62,7 @@ open class Matrix : IMatrix, Table {
                     cell.height(value)
             }
 
-            field = value;
+            field = value
         }
 
     /** Used for drawing the outlines. */
@@ -117,7 +118,7 @@ open class Matrix : IMatrix, Table {
         backgroundFont = skin.get("OpenSans-Large", BitmapFont::class.java)
 
         for (row in 0 until matrixRows) {
-            for (col in 0 until  matrixColumns) {
+            for (col in 0 until matrixColumns) {
                 val label1 = Label("", skin, "OpenSans-Entry")
 
                 label1.setAlignment(Align.center)
@@ -140,10 +141,10 @@ open class Matrix : IMatrix, Table {
      * @param col the column of the entry
      * @param value toString() is called on this value
      * */
-    override fun set(row: Int, col: Int, value: kotlin.Any) {
+    override fun set(row: Int, col: Int, value: Any) {
         if (row < 0 || col < 0) throw IllegalArgumentException()
 
-        val actor = cells.get(row * columns + col).actor;
+        val actor = cells.get(row * columns + col).actor
 
         if (actor is Label) {
             actor.isVisible = true
@@ -159,10 +160,10 @@ open class Matrix : IMatrix, Table {
      * @param row the row of the entry
      * @param col the column of the entry
      */
-    override fun get(row: Int, col: Int): kotlin.String {
+    override fun get(row: Int, col: Int): String {
         if (row < 0 || col < 0) throw IllegalArgumentException()
 
-        val actor = cells.get(row * columns + col).actor;
+        val actor = cells.get(row * columns + col).actor
         if (actor is Label)
             return actor.text.toString()
         return actor.toString()
@@ -179,7 +180,7 @@ open class Matrix : IMatrix, Table {
     override fun getCell(row: Int, col: Int): Cell<Label>? {
         if (row < 0 || col < 0) throw IllegalArgumentException()
 
-        val cell = cells.get(row * columns + col);
+        val cell = cells.get(row * columns + col)
         if (cell.actor != null && cell.actor is Label)
             return cell as Cell<Label>
         return null
@@ -194,7 +195,7 @@ open class Matrix : IMatrix, Table {
         // draw background text
         if (backgroundText.length > 0) {
             backgroundFont!!.color = backgroundTextColor
-            val matrixCenter = localToStageCoordinates(Vector2(width / 2f, height / 2f));
+            val matrixCenter = localToStageCoordinates(Vector2(width / 2f, height / 2f))
 
             val x = matrixCenter.x - backgroundTextWidth / 2f
             val y = matrixCenter.y + backgroundTextHeight / 2f
@@ -208,7 +209,7 @@ open class Matrix : IMatrix, Table {
         batch!!.color = Color.BLACK
 
         // left vertical outline
-        val pos = localToStageCoordinates(Vector2(0f, 0f));
+        val pos = localToStageCoordinates(Vector2(0f, 0f))
         val x = round(pos.x)
         val y = round(pos.y)
         val width = round(width)
@@ -236,5 +237,21 @@ open class Matrix : IMatrix, Table {
     }
 
     private fun round(a: Float) = Math.floor(a.toDouble()).toFloat()
+
+    override fun get(entry: Int): String {
+        val label = cells.get(entry).actor as Label
+        return label.text.toString()
+    }
+
+    override fun size(): Int {
+        return cells.size
+    }
+
+    override fun clearListeners() {
+        super.clearListeners()
+        for (cell in cells) {
+            cell.actor.clearListeners()
+        }
+    }
 
 }

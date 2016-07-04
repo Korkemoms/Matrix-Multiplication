@@ -1,6 +1,9 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
+import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.utils.Array
+import org.ajm.laforkids.actors.Matrix
 import java.util.*
 
 /**
@@ -9,7 +12,9 @@ import java.util.*
  */
 interface IMultiplicationTable {
 
-    var initialized:Boolean
+    val initialized: Boolean
+    /** These are invoked when something changes. */
+    val changeListeners: Array<Runnable>
     /** A */
     val matrixLeft: Matrix
     /** AB=C */
@@ -19,8 +24,8 @@ interface IMultiplicationTable {
     /** Vector at the bottom displaying answer alternatives.*/
     val matrixAnswers: Matrix
 
-    /** Shows the text 'AB=C' */
-    val equationLabel: Label
+    /** Can show some useful information. */
+    val topLeftActor: Actor
 
     /** The number of rows in the left matrix. */
     val rowsLeft: Int
@@ -63,20 +68,20 @@ interface IMultiplicationTable {
         if (columnsLeft != copyFrom.columnsLeft) throw IllegalArgumentException()
         if (columnsRight != copyFrom.columnsRight) throw IllegalArgumentException()
 
-        for (row in 0 until  rowsLeft) {
-            for (col in 0 until  columnsLeft) {
+        for (row in 0 until rowsLeft) {
+            for (col in 0 until columnsLeft) {
                 matrixLeft.set(row, col, copyFrom.matrixLeft.get(row, col))
             }
         }
 
         for (row in 0 until rowsLeft) {
-            for (col in 0 until  columnsRight) {
+            for (col in 0 until columnsRight) {
                 matrixProduct.set(row, col, copyFrom.matrixProduct.get(row, col))
             }
         }
 
         for (row in 0 until rowsRight) {
-            for (col in 0 until  columnsRight) {
+            for (col in 0 until columnsRight) {
                 matrixRight.set(row, col, copyFrom.matrixRight.get(row, col))
             }
         }
@@ -94,24 +99,25 @@ interface IMultiplicationTable {
     fun init(min: Int, max: Int) {
         val random = Random()
 
-        for (row in 0 until  rowsLeft) {
-            for (col in 0 until  columnsLeft) {
+        for (row in 0 until rowsLeft) {
+            for (col in 0 until columnsLeft) {
                 matrixLeft.set(row, col, random.nextInt(max - min + 1) + min)
             }
         }
 
         for (row in 0 until rowsRight) {
-            for (col in 0 until  columnsRight) {
+            for (col in 0 until columnsRight) {
                 matrixRight.set(row, col, random.nextInt(max - min + 1) + min)
             }
         }
 
         for (row in 0 until rowsLeft) {
-            for (col in 0 until  columnsRight) {
+            for (col in 0 until columnsRight) {
                 matrixProduct.set(row, col, "")
             }
         }
 
     }
 
+    fun clearListeners()
 }

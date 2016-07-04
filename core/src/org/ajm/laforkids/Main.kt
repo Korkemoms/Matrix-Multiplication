@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
@@ -14,21 +15,39 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.ScreenViewport
+import org.ajm.laforkids.actors.VisualizedMultiplicationTable
 import org.jrenner.smartfont.SmartFontGenerator
+import java.util.*
 
 class Main {
+
+    companion object {
+        val showStackTrace = false
+        fun log(e: Exception) {
+            if (showStackTrace)
+                Gdx.app.log("Exception", e.toString() + "\n" + Arrays.toString(e.stackTrace).replace(",", "\n"))
+            else
+                Gdx.app.log("Exception", e.toString())
+
+            //throw e
+        }
+
+        fun log(s: String) {
+            Gdx.app.log("Log", s)
+        }
+    }
 
     // hardcoded parameters
     val entryPad = 0f
     val screenFill = 1f
     val outlineThickness = 5f
-    val selectionColor = Color.valueOf("ED7D31")
-    val interpolationMethod = Interpolation.pow3Out
+    val selectionColor: Color = Color.valueOf("ED7D31")
+    val interpolationMethod: Interpolation = Interpolation.pow3Out
     val interpolationTime = 0.5f
 
 
     val stage = Stage(ScreenViewport())
-    var multiplicationTable: ColoredMultiplicationTable? = null
+    var multiplicationTable: VisualizedMultiplicationTable? = null
     var menu: Menu? = null
     var helpFrame: ScrollPane? = null
     val skin = Skin()
@@ -44,20 +63,24 @@ class Main {
     private val generatorABC = SmartFontGenerator(Gdx.files.internal("OpenSans-ABC.ttf"))
     private var firstInit = true
 
+    private val stressTester: StressTester
+
     constructor() {
         Gdx.input.inputProcessor = stage
         Gdx.graphics.isContinuousRendering = false
         Gdx.graphics.requestRendering()
 
 
-        skin.addRegions(TextureAtlas(Gdx.files.internal("gdx-skins-master/kenney-pixel/custom-skin/skin.atlas")));
+        skin.addRegions(TextureAtlas(Gdx.files.internal("gdx-skins-master/kenney-pixel/custom-skin/skin.atlas")))
 
         init(true, true)
 
         //stage!!.setDebugAll(true)
+        stressTester = StressTester(stage)
+        stressTester.active = false
     }
 
-    fun resize(width: Int, height: Int) {
+    fun resize() {
         init(false, true)
     }
 
@@ -72,8 +95,8 @@ class Main {
         if (newGame) gameIterator.newGame()
 
         // determine some visual details
-        val columns = gl.columnsLeft + gl.columnsRight;
-        val rows = gl.rowsLeft + gl.columnsLeft + 1;
+        val columns = gl.columnsLeft + gl.columnsRight
+        val rows = gl.rowsLeft + gl.columnsLeft + 1
 
         var outlineThickness = this.outlineThickness * (2f +
                 6f * Math.min(Gdx.graphics.width, Gdx.graphics.height) / (1000f)).toInt().toFloat()
@@ -93,7 +116,7 @@ class Main {
             skin.remove("OpenSans-Entry", entryFont!!.javaClass)
             entryFont!!.dispose()
         }
-        var size = (Math.max(Math.min(entryHeight, entryWidth) / 1.8f, 8f)).toInt();
+        var size = (Math.max(Math.min(entryHeight, entryWidth) / 1.8f, 8f)).toInt()
         entryFont = generatorDigits.createFont(Gdx.files.internal("OpenSans-Regular-Digits.ttf"), "OpenSans-Entry", size)
         skin.add("OpenSans-Entry", entryFont!!, entryFont!!.javaClass)
 
@@ -105,7 +128,7 @@ class Main {
                 defaultFont!!.dispose()
             }
 
-            size = (15f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(Gdx.graphics.width, Gdx.graphics.height) / 10f).toInt();
+            size = (15f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(Gdx.graphics.width, Gdx.graphics.height) / 10f).toInt()
             defaultFont = generator.createFont(Gdx.files.internal("OpenSans.ttf"), "default", size)
             skin.add("default", defaultFont!!, defaultFont!!.javaClass)
         }
@@ -136,7 +159,7 @@ class Main {
 
 
         // prepare a new multiplication table
-        multiplicationTable = ColoredMultiplicationTable(skin,
+        multiplicationTable = VisualizedMultiplicationTable(skin,
                 gl.rowsLeft, gl.columnsLeft, gl.columnsRight, gl.answerAlternatives)
         multiplicationTable!!.interpolationMethod = interpolationMethod
         multiplicationTable!!.interpolationTime = interpolationTime
@@ -160,6 +183,7 @@ class Main {
         // add settings functionality
         menu!!.settingsLabel.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                if (stressTester.active) return
 
                 // hide everything else
                 menu!!.hideMenu()
@@ -223,6 +247,8 @@ class Main {
 
     fun render() {
         try {
+            stressTester.invoke()
+
             Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
@@ -235,37 +261,21 @@ class Main {
     }
 
     fun dispose() {
+        _try { stage.dispose() }
+        _try { skin.dispose() }
+        _try { entryFont!!.dispose() }
+        _try { font_large!!.dispose() }
+        _try { defaultFont!!.dispose() }
+        _try { generator.dispose() }
+        _try { generatorDigits.dispose() }
+        _try { generatorABC.dispose() }
+    }
+
+    fun _try(inline: () -> Unit) {
         try {
-            stage.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            skin.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            if (entryFont != null) entryFont!!.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            if (font_large != null) font_large!!.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            if (defaultFont != null) defaultFont!!.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            generator.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            generatorDigits.dispose()
-        } catch(e: Exception) {
-        }
-        try {
-            generatorABC.dispose()
-        } catch(e: Exception) {
+            inline.invoke()
+        } catch (e: Exception) {
+            // ignore
         }
     }
 }

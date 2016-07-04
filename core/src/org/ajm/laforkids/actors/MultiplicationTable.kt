@@ -1,20 +1,27 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.utils.Array
+import org.ajm.laforkids.actors.Matrix
+import org.ajm.laforkids.actors.IMultiplicationTable
 
 open class MultiplicationTable : IMultiplicationTable, Table {
 
-    // i don't know why i had to redeclare these values
+    override val changeListeners = Array<Runnable>()
     override var initialized: Boolean = false
+
+    // i don't know why i had to redeclare these values
     override val matrixLeft: Matrix
     override val matrixProduct: Matrix
     override val matrixRight: Matrix
     override val matrixAnswers: Matrix
-    override val equationLabel: Label
+    override val topLeftActor: Actor
     override val rowsLeft: Int
     override val columnsLeft: Int
     override val rowsRight: Int
@@ -96,8 +103,8 @@ open class MultiplicationTable : IMultiplicationTable, Table {
             mustPack = true
         }
 
-    private val table: Table
-    private var mustPack = false
+    internal val table: Table
+    internal var mustPack = false
 
     /**
      * RowsRight is always the same as ColumnsLeft
@@ -121,7 +128,6 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         this.rowsRight = columnsLeft
         this.answerAlternatives = answerAlternatives
 
-        equationLabel = Label("AB=C", skin)
 
         matrixRight = Matrix(skin, rowsRight, columnsRight)
         matrixLeft = Matrix(skin, rowsLeft, columnsLeft)
@@ -129,9 +135,11 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         matrixAnswers = Matrix(skin, 1, answerAlternatives)
         matrixAnswers.drawOutlines = false
 
+        topLeftActor = prepareTopLeftActor()
+
 
         table = Table()
-        table.add(equationLabel)
+        table.add(topLeftActor)
         table.add(matrixRight)
         table.row()
         table.add(matrixLeft)
@@ -147,6 +155,31 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         matrixLeft.backgroundText = "A"
         matrixRight.backgroundText = "B"
         matrixProduct.backgroundText = "C"
+    }
+
+    internal fun notifyChangeListeners() {
+        for (runnable in changeListeners) {
+            runnable.run()
+        }
+    }
+
+    override fun pack() {
+        val cell = table.getCell(topLeftActor)
+
+        val width = columnsLeft * (entryWidth + matrixEntryPad * 2)
+        +(matrixInsidePad + matrixOutsidePad) * 2
+
+        val height = rowsRight * (entryHeight + matrixEntryPad * 2)
+        +(matrixInsidePad + matrixOutsidePad) * 2
+
+        cell.width(width).height(height)
+        cell.align(Align.center)
+
+        super.pack()
+    }
+
+    open internal fun prepareTopLeftActor(): Actor {
+        return Label("AB=C", skin)
     }
 
     override fun init(copyFrom: IMultiplicationTable) {
@@ -167,4 +200,10 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         super.draw(batch, parentAlpha)
     }
 
+    override fun clearListeners() {
+        super.clearListeners()
+        for (cell in cells) {
+            cell.actor.clearListeners()
+        }
+    }
 }

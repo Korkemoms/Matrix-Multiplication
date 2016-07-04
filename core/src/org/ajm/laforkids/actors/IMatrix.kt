@@ -1,4 +1,4 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.ui.Cell
@@ -57,7 +57,7 @@ interface IMatrix {
      * @param col the column of the entry
      * @param value toString() is called on this value
      */
-    fun set(row: Int, col: Int, value: kotlin.Any)
+    fun set(row: Int, col: Int, value: Any)
 
     /**
      * Get the string stored in the indicated position.
@@ -68,7 +68,7 @@ interface IMatrix {
      * @param col the column of the entry
      * @return the string stored in the indicated position
      */
-    fun get(row: Int, col: Int): kotlin.String
+    fun get(row: Int, col: Int): String
 
     /**
      * Get the cell of indicated position.
@@ -80,5 +80,15 @@ interface IMatrix {
      * @return the cell of indicated position
      */
     fun getCell(row: Int, col: Int): Cell<Label>?
+
+    /**
+     * @return the string stored in the ith position.
+     */
+    fun get(entry: Int): String
+
+    /**
+     * @return the number of entries in this matrix.
+     * */
+    fun size():Int
 
 }
