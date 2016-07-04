@@ -1,4 +1,4 @@
-package org.ajm.laforkids.desktop
+package org.ajm.laforkids.desktop.tests
 
 import org.ajm.laforkids.Settings
 import org.junit.Test

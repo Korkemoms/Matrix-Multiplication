@@ -1,9 +1,9 @@
-package org.ajm.laforkids.desktop
+package org.ajm.laforkids.desktop.tests
 
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import org.ajm.laforkids.ColoredMultiplicationTable
-import org.ajm.laforkids.IMultiplicationTable
-import org.ajm.laforkids.MultiplicationTable
+import org.ajm.laforkids.actors.ColoredMultiplicationTable
+import org.ajm.laforkids.actors.IMultiplicationTable
+import org.ajm.laforkids.actors.MultiplicationTable
 import java.util.*
 
 /**

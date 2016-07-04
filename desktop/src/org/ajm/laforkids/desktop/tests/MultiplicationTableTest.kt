@@ -1,7 +1,8 @@
-package org.ajm.laforkids.desktop
+package org.ajm.laforkids.desktop.tests
 
-import org.ajm.laforkids.ColoredMultiplicationTable
-import org.ajm.laforkids.MultiplicationTable
+import org.ajm.laforkids.actors.ColoredMultiplicationTable
+import org.ajm.laforkids.actors.MultiplicationTable
+import org.ajm.laforkids.desktop.DesktopLauncher
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith

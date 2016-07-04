@@ -1,11 +1,12 @@
-package org.ajm.laforkids.desktop
+package org.ajm.laforkids.desktop.tests
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.utils.Array
-import org.ajm.laforkids.IMatrix
+import org.ajm.laforkids.actors.IMatrix
 
-import org.ajm.laforkids.Matrix
+import org.ajm.laforkids.actors.Matrix
+import org.ajm.laforkids.desktop.DesktopLauncher
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runners.Parameterized

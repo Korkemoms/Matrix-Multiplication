@@ -1,4 +1,4 @@
-package org.ajm.laforkids.desktop
+package org.ajm.laforkids.desktop.tests
 
 import org.ajm.laforkids.Settings
 import java.util.*
@@ -6,7 +6,6 @@ import java.util.*
 class SettingsFactory(val tag: String = "Test Tag 223", val max: Int = 25) {
 
     private val random = Random()
-
 
     fun generateTestSettings(): Settings {
         val settings = Settings(tag)
