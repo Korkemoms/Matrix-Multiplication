@@ -39,8 +39,8 @@ class Main {
 
     // hardcoded parameters
     val entryPad = 0f
-    val screenFill = 1f
-    val outlineThickness = 5f
+    val screenFill = 1f // 1 = 100%
+    val outlineThickness = 5f // just a factor
     val selectionColor: Color = Color.valueOf("ED7D31")
     val interpolationMethod: Interpolation = Interpolation.pow3Out
     val interpolationTime = 0.5f
