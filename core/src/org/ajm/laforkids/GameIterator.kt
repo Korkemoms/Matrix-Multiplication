@@ -26,6 +26,7 @@ class GameIterator {
     private var multiplicationTable: IColoredMultiplicationTable? = null
     private val settings: Settings
     var gameLogic: GameLogic
+    private var main: Main? = null
 
 
     constructor(settings: Settings, gameLogic: GameLogic = GameLogic(settings)) {
@@ -52,7 +53,7 @@ class GameIterator {
     }
 
     /**
-     * @return whether the game is over, ie. the product matrix is completely filled in.
+     * @return whether the given answer was correct
      *
      * 1. [newGame]
      * 2. [init]
@@ -63,13 +64,11 @@ class GameIterator {
      * 7. [init]
      * 8. ...
      */
-    fun progress(): Boolean {
-        val completed = gameLogic.progress()
+    fun progress(answer: Int): Boolean {
+        val correctAnswer = gameLogic.progress(answer)
+        main!!.scoreLabel!!.score = gameLogic.score
 
-        if (!completed) {
-            gameLogic.updateAnswerAlternatives()
-        }
-        return completed
+        return correctAnswer
     }
 
     /**
@@ -87,7 +86,7 @@ class GameIterator {
      * 8. ...
      */
     fun init(multiplicationTable: VisualizedMultiplicationTable, main: Main, newGame: Boolean) {
-
+        this.main = main
         val old = this.multiplicationTable
         this.multiplicationTable = multiplicationTable
 
@@ -102,7 +101,7 @@ class GameIterator {
         }
 
         if (gameLogic.isComplete())
-            newGameMessage(main)
+            newGameMessage()
 
         // add functionality to the answer buttons
         for (cell in multiplicationTable.matrixAnswers.cells) {
@@ -114,14 +113,17 @@ class GameIterator {
                         val answer = actor.text.toString().toInt()
 
                         try {
-                            val correctAnswer = gameLogic.getCorrectAnswer()
 
-                            if (answer.equals(correctAnswer)) {
-                                val completed = progress()
-                                if (completed) {
-                                    newGameMessage(main)
-                                }
+                            val correctAnswer = progress(answer)
+                            if (correctAnswer) {
+                                val completed = gameLogic.isComplete()
+                                if (completed)
+                                    newGameMessage()
+                                else
+                                    gameLogic.updateAnswerAlternatives()
+
                                 multiplicationTable.notifyChangeListeners()
+                                main.scoreLabel!!.score = gameLogic.score
                             } else {
                                 // wrong answer, hide label
                                 actor.isVisible = false
@@ -247,11 +249,11 @@ class GameIterator {
         }
     }
 
-    private fun newGameMessage(main: Main) {
+    private fun newGameMessage() {
         multiplicationTable!!.clearListeners()
         Gdx.app.postRunnable {
-            main.showMessage("Touch anywhere for new game", "", {
-                main.init(true, false)
+            main!!.showMessage("Touch anywhere for new game", "", {
+                main!!.init(true, false)
             })
         }
     }

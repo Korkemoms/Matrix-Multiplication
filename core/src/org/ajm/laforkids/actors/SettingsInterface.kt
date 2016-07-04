@@ -1,9 +1,10 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
+import org.ajm.laforkids.Main
 
 /**
  * Interface for adjusting the settings defined in [Settings].

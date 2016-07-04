@@ -1,4 +1,4 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Rectangle

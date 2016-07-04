@@ -34,7 +34,7 @@ class GameLogicTest {
             for (j in 0 until gameLogic.maxProgress()) {
                 Assert.assertFalse(gameLogic.isComplete())
                 gameLogic.updateAnswerAlternatives()
-                gameLogic.progress()
+                gameLogic.progress(gameLogic.getCorrectAnswer())
             }
 
             assertExceptionThrown {

@@ -9,6 +9,12 @@ import java.util.*
  * The rules of the game is implemented here.
  */
 class GameLogic {
+
+    var score = 0
+        private set(value) {
+            field = value
+        }
+
     private var multiplicationTable: IColoredMultiplicationTable? = null
         private set(value) {
             if (value == null) throw IllegalArgumentException()
@@ -79,12 +85,19 @@ class GameLogic {
      * 6. [newGame]
      * 7. [init]
      * 8. ...
+     *
+     * @return whether given answer was the correct one.
      */
-    fun progress(): Boolean {
+    fun progress(answer: Int): Boolean {
         assertInitialized()
 
         // set entry of product matrix to the correct answer
         val correctAnswer = getCorrectAnswer()
+
+        if (answer != correctAnswer) {
+            score -= columnsLeft * Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
+            return false
+        }
 
         multiplicationTable!!.matrixProduct.set(getHighlightRow(), getHighlightCol(), correctAnswer)
         progress = MathUtils.clamp(progress + 1, 0, maxProgress())
@@ -96,7 +109,8 @@ class GameLogic {
             multiplicationTable!!.highlightRow = getHighlightRow()
         }
 
-        return completed
+        score += columnsLeft * Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
+        return true
     }
 
     fun maxProgress(): Int {
@@ -139,7 +153,7 @@ class GameLogic {
      * Compute the correct answer for currently highlighted entry.
      * @throws [NumberFormatException] if a needed entry is not a number
      */
-    fun getCorrectAnswer(): Int{
+    fun getCorrectAnswer(): Int {
         assertInitialized()
 
         val i = getHighlightRow()
@@ -208,6 +222,10 @@ class GameLogic {
     fun updateAnswerAlternatives() {
         assertInitialized()
         var i = 0
+
+        for (cell in multiplicationTable!!.matrixAnswers.cells) {
+            cell.actor.isVisible = true
+        }
 
         for (alternative in getAnswerAlternatives()) {
             multiplicationTable!!.matrixAnswers.set(0, i++, alternative)

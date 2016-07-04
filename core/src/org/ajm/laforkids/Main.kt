@@ -14,7 +14,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.ScreenViewport
+import org.ajm.laforkids.actors.Menu
+import org.ajm.laforkids.actors.ScoreLabel
+import org.ajm.laforkids.actors.SettingsInterface
 import org.ajm.laforkids.actors.VisualizedMultiplicationTable
 import org.jrenner.smartfont.SmartFontGenerator
 import java.util.*
@@ -37,6 +41,8 @@ class Main {
         }
     }
 
+
+
     // hardcoded parameters
     val entryPad = 0f
     val screenFill = 1f // 1 = 100%
@@ -56,13 +62,14 @@ class Main {
     var entryFont: BitmapFont? = null
     var font_large: BitmapFont? = null
     var defaultFont: BitmapFont? = null
-
+    var scoreLabel: ScoreLabel? = null
 
     private val generator = SmartFontGenerator(Gdx.files.internal("OpenSans.ttf"))
     private val generatorDigits = SmartFontGenerator(Gdx.files.internal("OpenSans-Digits.ttf"))
     private val generatorABC = SmartFontGenerator(Gdx.files.internal("OpenSans-ABC.ttf"))
     private var firstInit = true
 
+    val stressTest = false
     private val stressTester: StressTester
 
     constructor() {
@@ -75,9 +82,15 @@ class Main {
 
         init(true, true)
 
-        //stage!!.setDebugAll(true)
+
         stressTester = StressTester(stage)
-        stressTester.active = false
+        if (stressTest) {
+            stressTester.active = true
+            settings.maxColumnsLeft = 20
+            settings.maxRowsLeft = 20
+            settings.maxColumnsRight = 20
+            // do not save
+        }
     }
 
     fun resize() {
@@ -94,12 +107,29 @@ class Main {
         val gl = gameIterator.gameLogic
         if (newGame) gameIterator.newGame()
 
+
+        // prepare default font
+        var size = (10f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(Gdx.graphics.width, Gdx.graphics.height) / 10f).toInt()
+
+        if (resize) {
+            if (defaultFont != null) {
+                skin.remove("default", BitmapFont::class.java)
+                defaultFont!!.dispose()
+            }
+
+            defaultFont = generator.createFont(Gdx.files.internal("OpenSans.ttf"), "default", size)
+            skin.add("default", defaultFont!!, defaultFont!!.javaClass)
+        }
+        val padTop = defaultFont!!.capHeight * 1.5f
+
+        val tableHeight = (Gdx.graphics.height - padTop).toInt()
+
         // determine some visual details
         val columns = gl.columnsLeft + gl.columnsRight
         val rows = gl.rowsLeft + gl.columnsLeft + 1
 
         var outlineThickness = this.outlineThickness * (2f +
-                6f * Math.min(Gdx.graphics.width, Gdx.graphics.height) / (1000f)).toInt().toFloat()
+                6f * Math.min(Gdx.graphics.width, tableHeight) / (1000f)).toInt().toFloat()
         outlineThickness /= Math.max(columns, rows).toFloat()
 
         val matrixInsidePad = 3 * outlineThickness
@@ -108,7 +138,7 @@ class Main {
 
         val entryWidth = (Gdx.graphics.width.toFloat() * screenFill - pad * 4 - columns * entryPad * 2) /
                 Math.max(columns, gl.answerAlternatives).toFloat()
-        val entryHeight = (Gdx.graphics.height.toFloat() * screenFill - pad * 6 - rows * entryPad * 2) / rows.toFloat()
+        val entryHeight = (tableHeight * screenFill - pad * 6 - rows * entryPad * 2) / rows.toFloat()
 
 
         // prepare entry font
@@ -116,22 +146,9 @@ class Main {
             skin.remove("OpenSans-Entry", entryFont!!.javaClass)
             entryFont!!.dispose()
         }
-        var size = (Math.max(Math.min(entryHeight, entryWidth) / 1.8f, 8f)).toInt()
+        size = (Math.max(Math.min(entryHeight, entryWidth) / 1.8f, 8f)).toInt()
         entryFont = generatorDigits.createFont(Gdx.files.internal("OpenSans-Regular-Digits.ttf"), "OpenSans-Entry", size)
         skin.add("OpenSans-Entry", entryFont!!, entryFont!!.javaClass)
-
-
-        // prepare default font
-        if (resize) {
-            if (defaultFont != null) {
-                skin.remove("default", BitmapFont::class.java)
-                defaultFont!!.dispose()
-            }
-
-            size = (15f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(Gdx.graphics.width, Gdx.graphics.height) / 10f).toInt()
-            defaultFont = generator.createFont(Gdx.files.internal("OpenSans.ttf"), "default", size)
-            skin.add("default", defaultFont!!, defaultFont!!.javaClass)
-        }
 
 
         // prepare large font
@@ -150,14 +167,6 @@ class Main {
         skin.load(Gdx.files.internal("gdx-skins-master/kenney-pixel/custom-skin/skin.json"))
 
 
-        // add menu
-        if (resize) menu = Menu(stage, skin)
-        menu!!.clearMenuItemListeners()
-        stage.addActor(menu)
-        menu!!.isVisible = true
-        menu!!.setPosition(0f, stage.height - menu!!.height)
-
-
         // prepare a new multiplication table
         multiplicationTable = VisualizedMultiplicationTable(skin,
                 gl.rowsLeft, gl.columnsLeft, gl.columnsRight, gl.answerAlternatives)
@@ -171,13 +180,18 @@ class Main {
         multiplicationTable!!.outlineThickness = outlineThickness
         multiplicationTable!!.matrixEntryPad = entryPad
         multiplicationTable!!.setFillParent(true)
+        multiplicationTable!!.padTop(padTop)
         multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / gl.answerAlternatives.toFloat()
         multiplicationTable!!.matrixAnswers.entryPad = 0f
         stage.addActor(multiplicationTable!!)
 
 
-        // connect the game logic to the new MultiplicationTable
-        gameIterator.init(multiplicationTable!!, this, newGame)
+        // add menu
+        if (resize) menu = Menu(stage, skin)
+        menu!!.clearMenuItemListeners()
+        stage.addActor(menu)
+        menu!!.setPosition(0f, stage.height - menu!!.height)
+        menu!!.isVisible = true
 
 
         // add settings functionality
@@ -204,6 +218,17 @@ class Main {
                 settings.setFillParent(true)
             }
         })
+
+        // add score display
+        scoreLabel = ScoreLabel(skin, gameIterator.gameLogic.score)
+        stage.addActor(scoreLabel)
+        scoreLabel!!.setPosition(stage.width - scoreLabel!!.width * 1.02f, stage.height - scoreLabel!!.height)
+        scoreLabel!!.setAlignment(Align.right)
+        scoreLabel!!.interpolationTime = interpolationTime
+        scoreLabel!!.interpolationMethod = interpolationMethod
+
+        // connect the game logic to the new MultiplicationTable
+        gameIterator.init(multiplicationTable!!, this, newGame)
 
         firstInit = false
     }
