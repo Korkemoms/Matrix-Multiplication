@@ -95,7 +95,7 @@ class GameLogic {
         val correctAnswer = getCorrectAnswer()
 
         if (answer != correctAnswer) {
-            score -= columnsLeft * Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
+            score -= columnsLeft * 2 * Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
             return false
         }
 
@@ -109,7 +109,7 @@ class GameLogic {
             multiplicationTable!!.highlightRow = getHighlightRow()
         }
 
-        score += columnsLeft * Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
+        score += columnsLeft * 2 * Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
         return true
     }
 
