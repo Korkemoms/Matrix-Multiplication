@@ -122,7 +122,7 @@ class Visualizer2D : Actor {
 
         // determine scale
         val dim: Float = Math.min(width, height) / 2f
-        var scale = 1f
+        var scale = Float.MAX_VALUE
         if (beforeX != 0) scale = Math.min(Math.abs(dim / beforeX), scale)
         if (beforeY != 0) scale = Math.min(Math.abs(dim / beforeY), scale)
         if (afterX != 0) scale = Math.min(Math.abs(dim / afterX), scale)
