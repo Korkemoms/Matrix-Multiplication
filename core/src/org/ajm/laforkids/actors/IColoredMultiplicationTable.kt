@@ -1,4 +1,6 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
+
+import org.ajm.laforkids.actors.IMultiplicationTable
 
 /**
  * Contains 3 matrices that are set up to visualize a matrix multiplication.

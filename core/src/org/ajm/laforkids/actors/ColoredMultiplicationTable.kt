@@ -1,4 +1,4 @@
-package org.ajm.laforkids
+package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
@@ -9,17 +9,19 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import org.ajm.laforkids.actors.MultiplicationTable
+import org.ajm.laforkids.actors.IColoredMultiplicationTable
 
 /**
  * Contains 3 matrices that are set up to visualize a matrix multiplication.
  * Also contains a vector with answer alternatives.
  * Also draws some colored rectangles for helping the player compute.
  */
-class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTable {
+open class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTable {
 
     // settings, all can be changed
-    var interpolationMethod = Interpolation.pow3Out
-    var selectionColor = Color.FOREST
+    var interpolationMethod: Interpolation = Interpolation.pow3Out
+    var selectionColor: Color = Color.FOREST
     override var highlight = true
     var interpolationTime = 0.5f
         set(value) {
@@ -124,11 +126,11 @@ class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTa
 
 
         val pad = matrixInsidePad * 2
-        val thickness = outlineThickness;
+        val thickness = outlineThickness
 
         // animate product rectangle
         var actor = matrixProduct.getCell(highlightRow, highlightCol)!!.actor
-        var pos = actor.localToStageCoordinates(Vector2(0f, 0f));
+        var pos = actor.localToStageCoordinates(Vector2(0f, 0f))
         var x = productRectangle.x * (1f - interp) + floor(pos.x) * interp
         var y = productRectangle.y * (1f - interp) + floor(pos.y) * interp
         var width = productRectangle.width * (1f - interp) + floor(actor.width) * interp
@@ -141,7 +143,7 @@ class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTa
 
         // animate left rectangle
         actor = matrixLeft.getCell(highlightRow, 0)!!.actor
-        pos = actor.localToStageCoordinates(Vector2(0f, 0f));
+        pos = actor.localToStageCoordinates(Vector2(0f, 0f))
         x = leftRectangle.x * (1f - interp) + floor(pos.x) * interp
         y = leftRectangle.y * (1f - interp) + floor(pos.y) * interp
         width = (leftRectangle.width + pad) * (1f - interp) + floor(matrixLeft.width) * interp
@@ -154,7 +156,7 @@ class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTa
 
         // animate right rectangle
         actor = matrixRight.getCell(rowsRight - 1, highlightCol)!!.actor
-        pos = actor.localToStageCoordinates(Vector2(0f, 0f));
+        pos = actor.localToStageCoordinates(Vector2(0f, 0f))
         x = rightRectangle.x * (1f - interp) + floor(pos.x) * interp
         y = rightRectangle.y * (1f - interp) + floor(pos.y) * interp
         width = rightRectangle.width * (1f - interp) + floor(actor.width) * interp
@@ -180,17 +182,17 @@ class ColoredMultiplicationTable : IColoredMultiplicationTable, MultiplicationTa
      *
      */
     private fun outlineRectangle(batch: Batch, x: Float, y: Float, width: Float, height: Float, outlineThickness: Float) {
-        val y = floor(y)
-        val x = floor(x)
-        val height = floor(height)
-        val width = floor(width)
-        val outlineThickness = floor(outlineThickness)
+        val _y = floor(y)
+        val _x = floor(x)
+        val _height = floor(height)
+        val _width = floor(width)
+        val _outlineThickness = floor(outlineThickness)
 
 
-        batch.draw(dot, x, y, outlineThickness, height)
-        batch.draw(dot, x, y, width, outlineThickness)
-        batch.draw(dot, x, y + height - outlineThickness, width, outlineThickness)
-        batch.draw(dot, x + width - outlineThickness, y, outlineThickness, height)
+        batch.draw(dot, _x, _y, _outlineThickness, _height)
+        batch.draw(dot, _x, _y, _width, _outlineThickness)
+        batch.draw(dot, _x, _y + _height - _outlineThickness, _width, _outlineThickness)
+        batch.draw(dot, _x + _width - _outlineThickness, _y, _outlineThickness, _height)
     }
 
     private fun floor(a: Float) = Math.floor(a.toDouble()).toFloat()
