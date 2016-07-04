@@ -11,7 +11,7 @@ class Adapter : ApplicationAdapter() {
     }
 
     override fun resize(width: Int, height: Int) {
-        main!!.resize(width,height)
+        main!!.resize()
     }
 
     override fun render() {

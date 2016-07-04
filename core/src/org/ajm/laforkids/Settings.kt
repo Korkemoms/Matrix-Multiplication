@@ -30,7 +30,7 @@ class Settings {
      * Load and save settings using the given tag.
      */
     constructor(tag: String) {
-        prefs = Gdx.app.getPreferences(tag);
+        prefs = Gdx.app.getPreferences(tag)
 
         minValue = prefs.getInteger(SETTING_MIN_VALUE, -10)
         maxValue = prefs.getInteger(SETTING_MAX_VALUE, 10)
