@@ -2,6 +2,7 @@ package org.ajm.laforkids
 
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.utils.Array
+import org.ajm.laforkids.actors.IColoredMultiplicationTable
 import java.util.*
 
 /**
@@ -40,7 +41,6 @@ class GameLogic {
         private set(value) {
             field = value
         }
-
 
     constructor(settings: Settings) {
         this.settings = settings
@@ -137,8 +137,9 @@ class GameLogic {
 
     /**
      * Compute the correct answer for currently highlighted entry.
+     * @throws [NumberFormatException] if a needed entry is not a number
      */
-    fun getCorrectAnswer(): Int {
+    fun getCorrectAnswer(): Int{
         assertInitialized()
 
         val i = getHighlightRow()
@@ -167,7 +168,10 @@ class GameLogic {
     fun getRandomRightColumnCount() = random.nextInt(settings.maxColumnsRight - settings.minColumnsRight + 1) + settings.minColumnsRight
     fun getAnswerAlternativesCount() = settings.answerAlternatives
 
-
+    /**
+     * Generate some answer alternatives.
+     * @throws [NumberFormatException] if a needed entry is not a number
+     */
     fun getAnswerAlternatives(): Array<String> {
         assertInitialized()
         if (progress < 0) throw IllegalStateException()
@@ -181,7 +185,7 @@ class GameLogic {
         // make up some alternatives
         val errors = Array<Int>()
         for (i in 0 until multiplicationTable!!.answerAlternatives) {
-            var error = 0;
+            var error = 0
             var j = 0
             while ((error == 0 || errors.contains(error, false)) && j++ < 10) {
                 error = random.nextInt(Math.max(settings.answerMaxError * 2, 1)) - settings.answerMaxError
@@ -199,10 +203,12 @@ class GameLogic {
     /**
      * Update the answer alternatives found on the bottom
      * of the screen.
+     * @throws [NumberFormatException] if a needed entry is not a number
      */
     fun updateAnswerAlternatives() {
         assertInitialized()
         var i = 0
+
         for (alternative in getAnswerAlternatives()) {
             multiplicationTable!!.matrixAnswers.set(0, i++, alternative)
         }
