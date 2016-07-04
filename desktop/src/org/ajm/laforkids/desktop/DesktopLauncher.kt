@@ -6,15 +6,16 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import org.ajm.laforkids.Adapter
 import org.ajm.laforkids.Main
+import org.ajm.laforkids.desktop.tests.GameLogicTest
+import org.ajm.laforkids.desktop.tests.MatrixTest
+import org.ajm.laforkids.desktop.tests.MultiplicationTableTest
+import org.ajm.laforkids.desktop.tests.SettingsTest
 import org.junit.runner.Description
 import org.junit.runner.JUnitCore
 import org.junit.runner.notification.Failure
 import org.junit.runner.notification.RunListener
 import java.util.*
 
-/**
- * Created by Andreas on 17.06.2016.
- */
 
 object DesktopLauncher {
 
