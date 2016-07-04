@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
@@ -14,16 +13,20 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.Array
+import org.ajm.laforkids.actors.IColoredMultiplicationTable
+import org.ajm.laforkids.actors.VisualizedMultiplicationTable
 import java.util.*
 
 /**
- * The progress of the game is implemented here.
+ * The progress of the game is implemented here: listeners are added to the different
+ * buttons and labels so that the game can progress.
  */
 class GameIterator {
 
     private var multiplicationTable: IColoredMultiplicationTable? = null
     private val settings: Settings
     var gameLogic: GameLogic
+
 
     constructor(settings: Settings, gameLogic: GameLogic = GameLogic(settings)) {
         this.settings = settings
@@ -83,7 +86,7 @@ class GameIterator {
      * 7. [init]
      * 8. ...
      */
-    fun init(multiplicationTable: IColoredMultiplicationTable, main: Main, newGame: Boolean) {
+    fun init(multiplicationTable: VisualizedMultiplicationTable, main: Main, newGame: Boolean) {
 
         val old = this.multiplicationTable
         this.multiplicationTable = multiplicationTable
@@ -110,16 +113,23 @@ class GameIterator {
                     override fun clicked(event: InputEvent?, x: Float, y: Float) {
                         val answer = actor.text.toString().toInt()
 
-                        val correctAnswer = gameLogic.getCorrectAnswer()
+                        try {
+                            val correctAnswer = gameLogic.getCorrectAnswer()
 
-                        if (answer.equals(correctAnswer)) {
-                            val completed = progress()
-                            if (completed) {
-                                newGameMessage(main)
+                            if (answer.equals(correctAnswer)) {
+                                val completed = progress()
+                                if (completed) {
+                                    newGameMessage(main)
+                                }
+                                multiplicationTable.notifyChangeListeners()
+                            } else {
+                                // wrong answer, hide label
+                                actor.isVisible = false
                             }
-                        } else {
-                            // wrong answer, hide label
-                            actor.isVisible = false
+                        } catch (e: Exception) {
+                            // an entry may be just "-" (minus) if its currently being edited
+                            Main.log("Trouble when user clicked on answer button.")
+                            Main.log(e)
                         }
                     }
                 })
@@ -129,21 +139,28 @@ class GameIterator {
         // add functionality to help button
         main.menu!!.helpLabel.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                var help = ""
+                try {
+                    if (gameLogic.isComplete()) return
 
-                val i = gameLogic.getHighlightRow()
-                val j = gameLogic.getHighlightCol()
-                // convolve i'th left row with j'th right col
-                for (k in 0 until multiplicationTable.columnsLeft) {
-                    val a = multiplicationTable.matrixLeft.get(i, k).toInt()
-                    val b = multiplicationTable.matrixRight.get(k, j).toInt()
+                    var help = ""
 
-                    help += parentheses(a) + "*" + parentheses(b) + "+"
+                    val i = gameLogic.getHighlightRow()
+                    val j = gameLogic.getHighlightCol()
+                    // convolve i'th left row with j'th right col
+                    for (k in 0 until multiplicationTable.columnsLeft) {
+                        val a = multiplicationTable.matrixLeft.get(i, k).toInt()
+                        val b = multiplicationTable.matrixRight.get(k, j).toInt()
+
+                        help += parentheses(a) + "*" + parentheses(b) + "+"
+                    }
+                    help = help.dropLast(1)
+
+                    main.showMessage(help)
+                    main.menu!!.hideMenu()
+
+                } catch (e: Exception) {
+                    Main.log(e)
                 }
-                help = help.dropLast(1)
-
-                main.showMessage(help)
-                main.menu!!.hideMenu()
             }
         })
 
@@ -159,12 +176,16 @@ class GameIterator {
         entries.addAll(multiplicationTable.matrixLeft.cells)
         entries.addAll(multiplicationTable.matrixRight.cells)
 
+        var notIntegerLock = false
+
         for (cell in entries) {
             cell as Cell<Label>
 
             cell.actor.clearListeners()
             cell.actor.addListener(object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    if (notIntegerLock) return
+                    if (gameLogic.isComplete()) return
 
                     // add TextField on top of cell
                     val textField = TextField(cell.actor.text.toString(), main.skin)
@@ -186,8 +207,16 @@ class GameIterator {
                     // change value in matrix
                     textField.addListener(object : ChangeListener() {
                         override fun changed(event: ChangeEvent?, actor: Actor?) {
-                            if (textField.text.length > 0)
+                            if (textField.text.length > 0) {
                                 cell.actor.setText(textField.text)
+                                multiplicationTable.notifyChangeListeners()
+                            }
+                            try { // determine if text is integer
+                                notIntegerLock = false
+                                textField.text.toInt()
+                            } catch (e: NumberFormatException) {
+                                notIntegerLock = true
+                            }
                         }
                     })
 
@@ -195,9 +224,21 @@ class GameIterator {
                     main.stage.addListener(object : ClickListener() {
                         override fun clicked(event: InputEvent?, x: Float, y: Float) {
                             if (main.stage.hit(x, y, true) != textField) {
-                                textField.remove()
-                                gameLogic.updateAnswerAlternatives()
-                                main.stage.removeListener(this)
+                                if (notIntegerLock) return // do not allow to close if not integer
+
+                                try {
+                                    if (!gameLogic.isComplete())
+                                        gameLogic.updateAnswerAlternatives()
+
+                                    textField.remove()
+                                    main.stage.removeListener(this)
+                                    multiplicationTable.notifyChangeListeners()
+
+                                } catch (e: IllegalStateException) {
+                                    Main.log("Trouble removing text field:")
+                                    //Main.log(e)
+                                    throw e
+                                }
                             }
                         }
                     })
@@ -207,6 +248,7 @@ class GameIterator {
     }
 
     private fun newGameMessage(main: Main) {
+        multiplicationTable!!.clearListeners()
         Gdx.app.postRunnable {
             main.showMessage("Touch anywhere for new game", "", {
                 main.init(true, false)
