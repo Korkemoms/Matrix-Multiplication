@@ -48,6 +48,9 @@ class GameLogic {
             field = value
         }
 
+    private var completed = false
+    private var scoreThisRound = 0
+
     constructor(settings: Settings) {
         this.settings = settings
     }
@@ -73,6 +76,11 @@ class GameLogic {
 
         multiplicationTable.highlightCol = getHighlightCol()
         multiplicationTable.highlightRow = getHighlightRow()
+
+        // increment score if completed previous game
+        if (completed) score += Math.max(scoreThisRound/2, 0)
+        completed = false
+        scoreThisRound = 0
     }
 
     /**
@@ -96,6 +104,7 @@ class GameLogic {
 
         if (answer != correctAnswer) {
             score -= score(correctAnswer)
+            scoreThisRound -= score(correctAnswer)
             return false
         }
 
@@ -107,15 +116,18 @@ class GameLogic {
         if (!completed) {
             multiplicationTable!!.highlightCol = getHighlightCol()
             multiplicationTable!!.highlightRow = getHighlightRow()
+        } else {
+            this.completed = true
         }
 
         score += score(correctAnswer)
+        scoreThisRound += score(correctAnswer)
         return true
     }
 
     private fun score(answer: Int): Int {
         val i = Math.max(1.0, Math.log((settings.maxValue - settings.minValue).toDouble())).toInt()
-        return i * columnsLeft * Math.max(2,Math.log(answer.toDouble()).toInt())
+        return i * columnsLeft * Math.max(2, Math.log(answer.toDouble()).toInt())
     }
 
     fun maxProgress(): Int {

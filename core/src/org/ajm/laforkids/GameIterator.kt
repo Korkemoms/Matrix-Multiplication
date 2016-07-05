@@ -91,6 +91,7 @@ class GameIterator {
         this.multiplicationTable = multiplicationTable
 
         gameLogic.init(multiplicationTable)
+        main.scoreLabel!!.score = gameLogic.score
 
         // set the entries of left and right matrices
         if (newGame) {

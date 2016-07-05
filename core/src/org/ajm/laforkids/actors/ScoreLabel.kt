@@ -8,7 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.utils.Align
 
-
+/**
+ * Label for showing an integer score.
+ */
 class ScoreLabel : Label {
 
     var interpolationMethod: Interpolation = Interpolation.pow4Out
@@ -43,12 +45,7 @@ class ScoreLabel : Label {
         displayedScore = MathUtils.lerp(previousDisplayedScore.toFloat(), score.toFloat(), lerp).toInt()
         setText(displayedScore.toString())
 
-        // update scale
-        val _scale = Math.signum((displayedScore - previousDisplayedScore).toFloat()) * lerp / alpha
-        setScale(_scale)
-
         super.draw(batch, parentAlpha)
 
     }
-
 }
