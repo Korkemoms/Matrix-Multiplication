@@ -1,10 +1,15 @@
 package org.ajm.laforkids.actors
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.utils.Array
 import org.ajm.laforkids.Main
+import org.ajm.laforkids.getAllChildren
 
 /**
  * Interface for adjusting the settings defined in [Settings].
@@ -28,7 +33,7 @@ class SettingsInterface : ScrollPane {
         // filter for text input
         val digitInput = TextField.TextFieldFilter { textField, c -> c.isDigit() || c.equals('-') }
 
-        // create all the text fields for input
+        // create the text fields for input
         val minValue = TextField(s.minValue.toString(), skin)
         minValue.textFieldFilter = digitInput
         val maxValue = TextField(s.maxValue.toString(), skin)
@@ -54,7 +59,7 @@ class SettingsInterface : ScrollPane {
         val answerMaxError = TextField(s.answerMaxError.toString(), skin)
         answerMaxError.textFieldFilter = digitInput
 
-        // create all the labels
+        // create the labels
         val labelValue = Label("Value", skin)
         val labelRowsLeft = Label("Rows left", skin)
         val labelColumnsLeft = Label("Columns left", skin)
@@ -67,39 +72,74 @@ class SettingsInterface : ScrollPane {
         val pad = 3f
         val tableSettings = Table()
 
-        tableSettings.add(labelValue).pad(pad).align(Align.left).row()
+        var width = Math.min(Gdx.graphics.width / 3f, labelRowsLeft.width)
+
         var aux = Table()
-        aux.add(minValue).pad(pad)
-        aux.add(maxValue).pad(pad)
+        aux.add(Label("Min", skin)).width(width).pad(pad)
+        aux.add(Label("Max", skin)).width(width).pad(pad)
+        tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
+
+        tableSettings.add(labelValue).pad(pad).align(Align.left).row()
+        aux = Table()
+        aux.add(minValue).width(width).pad(pad)
+        aux.add(maxValue).width(width).pad(pad)
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         tableSettings.add(labelRowsLeft).pad(pad).align(Align.left).row()
         aux = Table()
-        aux.add(minRowsLeft).pad(pad)
-        aux.add(maxRowsLeft).pad(pad)
+        aux.add(minRowsLeft).width(width).pad(pad)
+        aux.add(maxRowsLeft).width(width).pad(pad)
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         tableSettings.add(labelColumnsLeft).pad(pad).align(Align.left).row()
         aux = Table()
-        aux.add(minColumnsLeft).pad(pad)
-        aux.add(maxColumnsLeft).pad(pad)
+        aux.add(minColumnsLeft).width(width).pad(pad)
+        aux.add(maxColumnsLeft).width(width).pad(pad)
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         tableSettings.add(labelColumnsRight).pad(pad).align(Align.left).row()
         aux = Table()
-        aux.add(minColumnsRight).pad(pad)
-        aux.add(maxColumnsRight).pad(pad)
+        aux.add(minColumnsRight).width(width).pad(pad)
+        aux.add(maxColumnsRight).width(width).pad(pad)
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         tableSettings.add(labelAnswerAlternatives).pad(pad).align(Align.left).row()
         aux = Table()
-        aux.add(answerAlternatives).pad(pad)
+        aux.add(answerAlternatives).width(width).pad(pad)
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         tableSettings.add(labelAnswerMaxError).pad(pad).align(Align.left).row()
         aux = Table()
-        aux.add(answerMaxError).pad(pad)
+        aux.add(answerMaxError).width(width).pad(pad)
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
+
+        // replace onscreen keyboard
+        for (actor in getAllChildren(tableSettings)) {
+            if (actor !is TextField) continue
+            actor.onscreenKeyboard = TextField.OnscreenKeyboard { }
+
+            actor.addListener(object : ClickListener() {
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    actor.selectAll()
+
+                    val keypad = main.showKeypad()
+
+                    stage.addListener(object : ClickListener() {
+                        override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                            val hitActor = main.stage.hit(x, y, true)
+
+                            if (hitActor == actor) return
+                            if (keypad.contains(x, y)) return
+
+                            main.stage.removeListener(this)
+                            keypad.remove()
+                            actor.clearSelection()
+                        }
+                    })
+                }
+            })
+        }
+
 
         // prepare ok and cancel buttons
         val ok = TextButton("Save", skin)
@@ -149,12 +189,22 @@ class SettingsInterface : ScrollPane {
 
         // ok and cancel button in their own table
         val tableButtons = Table()
-        tableButtons.add(cancel).pad(pad * 10)
-        tableButtons.add(ok).pad(pad * 10)
+        width = Math.max(width, cancel.width)
+        tableButtons.add(cancel).width(width).pad(width * 0.1f)
+        tableButtons.add(ok).width(width).pad(width * 0.1f)
 
         // put it all in the main table
         val table = children.first() as Table
         table.add(tableSettings).row()
         table.add(tableButtons)
     }
+
+    fun setFontColor(color: Color) {
+        for (actor in getAllChildren(this)) {
+            if (actor is Label)
+                actor.style.fontColor.set(color)
+        }
+    }
+
+
 }
