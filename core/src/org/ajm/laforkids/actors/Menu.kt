@@ -20,6 +20,8 @@ class Menu : Label {
     val settingsLabel: Label
     var table = Table()
 
+    var menuBackgroundColor = Color(Color.GRAY)
+
     /** Remove all listeners from the buttons(labels) in the dropdown menu.*/
     fun clearMenuItemListeners() {
         nextLabel.clearListeners()
@@ -32,9 +34,14 @@ class Menu : Label {
         table.remove()
     }
 
-    /** Hide the button but not the dropdown menu. */
-    fun hideButton() {
-        isVisible = false
+    /**
+     * Convenience function for setting the color of all the labels at once.
+     */
+    fun setTextColor(color: Color) {
+        nextLabel.style.fontColor.set(color)
+        helpLabel.style.fontColor.set(color)
+        settingsLabel.style.fontColor.set(color)
+
     }
 
     constructor(stage: Stage, skin: Skin) : super("Menu", skin) {
@@ -57,7 +64,7 @@ class Menu : Label {
                 // prepare the dropdown menu
                 table = Table()
                 table.background = skin.getDrawable("dot")
-                table.color = Color(0.9f, 0.9f, 0.9f, 0.95f)
+                table.color.set(menuBackgroundColor)
 
                 var width = nextLabel.prefWidth
                 width = Math.max(helpLabel.prefWidth, width)
