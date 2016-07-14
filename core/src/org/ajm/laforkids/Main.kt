@@ -3,23 +3,20 @@ package org.ajm.laforkids
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.Touchable
+import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.utils.Array
 import com.badlogic.gdx.utils.viewport.ScreenViewport
-import org.ajm.laforkids.actors.Menu
-import org.ajm.laforkids.actors.ScoreLabel
-import org.ajm.laforkids.actors.SettingsInterface
-import org.ajm.laforkids.actors.VisualizedMultiplicationTable
+import org.ajm.laforkids.actors.*
 import org.jrenner.smartfont.SmartFontGenerator
 import java.util.*
 
@@ -41,13 +38,34 @@ class Main {
         }
     }
 
+    val palette = Array<Color>()
+
+    init {
+        palette.add(Color.valueOf("#70AD47"))
+        palette.add(Color.valueOf("#4472C4"))
+        palette.add(Color.valueOf("#FFC000"))
+        palette.add(Color.valueOf("#A5A5A5"))
+        palette.add(Color.valueOf("#ED7D31"))
+        palette.add(Color.valueOf("#5B9BD5"))
+        palette.add(Color.valueOf("#44546A"))
+        palette.add(Color.valueOf("#44546A"))
+        palette.add(Color.valueOf("#E7E6E6"))
+        palette.add(Color.valueOf("#000000"))
+        palette.add(Color.valueOf("#FFFFFF"))
+    }
 
 
     // hardcoded parameters
+    val selectionColor: Color = palette[4]
+    val topBarColor: Color = palette[2]
+    val backgroundColor: Color = palette[10]
+    val matrixBackgroundTextColor: Color = palette[8]
+    val menuFontColor: Color = palette[9]
+    val menuBackgroundColor: Color = palette[0]
+
     val entryPad = 0f
     val screenFill = 1f // 1 = 100%
     val outlineThickness = 5f // just a factor
-    val selectionColor: Color = Color.valueOf("ED7D31")
     val interpolationMethod: Interpolation = Interpolation.pow3Out
     val interpolationTime = 0.5f
 
@@ -72,7 +90,9 @@ class Main {
     val stressTest = false
     private val stressTester: StressTester
 
+
     constructor() {
+
         Gdx.input.inputProcessor = stage
         Gdx.graphics.isContinuousRendering = false
         Gdx.graphics.requestRendering()
@@ -84,13 +104,21 @@ class Main {
 
 
         stressTester = StressTester(stage)
+        stressTester.active = stressTest
         if (stressTest) {
-            stressTester.active = true
             settings.maxColumnsLeft = 20
             settings.maxRowsLeft = 20
             settings.maxColumnsRight = 20
             // do not save
         }
+    }
+
+    fun showKeypad(): Keypad {
+        val keypad = Keypad(skin)
+        stage.addActor(keypad)
+        keypad.setPosition(0f, 0f)
+        keypad.touchable = Touchable.enabled
+        return keypad
     }
 
     fun resize() {
@@ -100,13 +128,11 @@ class Main {
     fun init(newGame: Boolean, resize: Boolean) {
         Gdx.graphics.requestRendering()
 
-
-        stage.viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
-        stage.clear()
-
-        val gl = gameIterator.gameLogic
         if (newGame) gameIterator.newGame()
 
+        // to update the fonts everything is rebuilt
+        stage.viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
+        stage.clear()
 
         // prepare default font
         var size = (10f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(Gdx.graphics.width, Gdx.graphics.height) / 10f).toInt()
@@ -120,11 +146,12 @@ class Main {
             defaultFont = generator.createFont(Gdx.files.internal("OpenSans.ttf"), "default", size)
             skin.add("default", defaultFont!!, defaultFont!!.javaClass)
         }
-        val padTop = defaultFont!!.capHeight * 1.5f
-
-        val tableHeight = (Gdx.graphics.height - padTop).toInt()
 
         // determine some visual details
+        val padTop = defaultFont!!.capHeight * 2f
+        val tableHeight = (Gdx.graphics.height - padTop).toInt()
+
+        val gl = gameIterator.gameLogic
         val columns = gl.columnsLeft + gl.columnsRight
         val rows = gl.rowsLeft + gl.columnsLeft + 1
 
@@ -166,7 +193,6 @@ class Main {
         // skin must be reloaded to include the new fonts
         skin.load(Gdx.files.internal("gdx-skins-master/kenney-pixel/custom-skin/skin.json"))
 
-
         // prepare a new multiplication table
         multiplicationTable = VisualizedMultiplicationTable(skin,
                 gl.rowsLeft, gl.columnsLeft, gl.columnsRight, gl.answerAlternatives)
@@ -181,17 +207,51 @@ class Main {
         multiplicationTable!!.matrixEntryPad = entryPad
         multiplicationTable!!.setFillParent(true)
         multiplicationTable!!.padTop(padTop)
+        multiplicationTable!!.padBottom(Gdx.graphics.height / 3f)
+        multiplicationTable!!.align(Align.bottom)
         multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / gl.answerAlternatives.toFloat()
         multiplicationTable!!.matrixAnswers.entryPad = 0f
-        stage.addActor(multiplicationTable!!)
+        multiplicationTable!!.setMatrixBackgroundTextColor(matrixBackgroundTextColor)
 
+        // put in scrollPane so when soft keyboard is visible one can scroll to view what is under it
+        val scrollPane = object : ScrollPane(multiplicationTable!!) {
+            val dot = skin.getDrawable("dot")
+            override fun draw(batch: Batch?, parentAlpha: Float) {
+                batch as Batch
+                batch.color = backgroundColor
+                dot.draw(batch, x, y, width, height)
+                super.draw(batch, parentAlpha)
+            }
+        }
+        stage.addActor(scrollPane)
+        scrollPane.setFillParent(true)
+        scrollPane.setScrollingDisabled(true, false)
+
+
+        // prepare top bar
+        val topBar = Table()
+        topBar.background = skin.getDrawable("dot")
+        topBar.color.set(topBarColor)
+        stage.addActor(topBar)
 
         // add menu
         if (resize) menu = Menu(stage, skin)
+        menu!!.setTextColor(menuFontColor)
         menu!!.clearMenuItemListeners()
-        stage.addActor(menu)
-        menu!!.setPosition(0f, stage.height - menu!!.height)
+        topBar.add(menu).width(Gdx.graphics.width * 0.5f)
         menu!!.isVisible = true
+        menu!!.menuBackgroundColor = menuBackgroundColor
+
+        // add score display
+        scoreLabel = ScoreLabel(skin, gameIterator.gameLogic.score)
+        topBar.add(scoreLabel).width(Gdx.graphics.width * (0.49f)).padRight(Gdx.graphics.width * 0.01f)
+        scoreLabel!!.setAlignment(Align.right)
+        scoreLabel!!.interpolationTime = interpolationTime
+        scoreLabel!!.interpolationMethod = interpolationMethod
+        scoreLabel!!.style.fontColor = menuFontColor
+
+        topBar.pack()
+        topBar.setPosition(0f, stage.height - topBar.height)
 
 
         // add settings functionality
@@ -201,16 +261,17 @@ class Main {
 
                 // hide everything else
                 menu!!.hideMenu()
-                menu!!.hideButton()
                 multiplicationTable!!.isVisible = false
+                topBar.isVisible = false
 
                 // prepare settings interface
                 val settings = SettingsInterface(this@Main)
+                settings.setFontColor(menuFontColor)
                 settings.onSaved = Runnable { init(true, false) }
                 settings.onCancel = Runnable {
                     stage.actors.removeValue(settings, true)
                     multiplicationTable!!.isVisible = true
-                    menu!!.isVisible = true
+                    topBar.isVisible = true
                 }
 
                 // show settings interface
@@ -219,17 +280,12 @@ class Main {
             }
         })
 
-        // add score display
-        scoreLabel = ScoreLabel(skin, gameIterator.gameLogic.score)
-        stage.addActor(scoreLabel)
-        scoreLabel!!.setPosition(stage.width - scoreLabel!!.width * 1.02f, stage.height - scoreLabel!!.height)
-        scoreLabel!!.setAlignment(Align.right)
-        scoreLabel!!.interpolationTime = interpolationTime
-        scoreLabel!!.interpolationMethod = interpolationMethod
 
         // connect the game logic to the new MultiplicationTable
         gameIterator.init(multiplicationTable!!, this, newGame)
 
+
+        multiplicationTable!!.updateTopLeftActorSize()
         firstInit = false
     }
 
@@ -303,4 +359,5 @@ class Main {
             // ignore
         }
     }
+
 }

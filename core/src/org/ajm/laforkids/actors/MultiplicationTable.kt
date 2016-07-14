@@ -1,5 +1,7 @@
 package org.ajm.laforkids.actors
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Cell
@@ -163,7 +165,17 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         }
     }
 
-    override fun pack() {
+    /**
+     * Convenience method for setting the backgrund text color of all the matrices at once.
+     */
+    fun setMatrixBackgroundTextColor(color: Color) {
+        matrixAnswers.backgroundTextColor.set(color)
+        matrixLeft.backgroundTextColor.set(color)
+        matrixRight.backgroundTextColor.set(color)
+        matrixProduct.backgroundTextColor.set(color)
+    }
+
+    fun updateTopLeftActorSize() {
         val cell = table.getCell(topLeftActor)
 
         val width = columnsLeft * (entryWidth + matrixEntryPad * 2)
@@ -172,10 +184,9 @@ open class MultiplicationTable : IMultiplicationTable, Table {
         val height = rowsRight * (entryHeight + matrixEntryPad * 2)
         +(matrixInsidePad + matrixOutsidePad) * 2
 
-        cell.width(width).height(height)
+        topLeftActor.width = width
+        topLeftActor.height = height
         cell.align(Align.center)
-
-        super.pack()
     }
 
     open internal fun prepareTopLeftActor(): Actor {
