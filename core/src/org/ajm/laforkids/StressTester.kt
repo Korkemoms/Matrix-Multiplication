@@ -38,11 +38,9 @@ class StressTester(val inputProcessor: InputProcessor) {
                     inputProcessor.touchUp(pos.x.toInt(), pos.y.toInt(), 1, 1)
                 }
             }
-
         } catch (e: Exception) {
             Gdx.app.log("Stress Test", "Stress test crashed at x=$pos.")
             throw e
         }
-
     }
 }

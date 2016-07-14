@@ -5,8 +5,6 @@ import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.utils.Align
-import org.ajm.laforkids.actors.Visualizer2D
-import org.ajm.laforkids.actors.MultiplicationTable
 
 /**
  * Creates appropriate visualizer for given multiplication table.

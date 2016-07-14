@@ -1,5 +1,6 @@
 package org.ajm.laforkids.actors
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
@@ -54,7 +55,6 @@ class Visualizer2D : Actor {
         multiplicationTable.changeListeners.add(Runnable {
             update()
         })
-
     }
 
     /**
@@ -93,7 +93,6 @@ class Visualizer2D : Actor {
 
         drawAfterX = !product.get(0).isEmpty()
         drawAfterY = !product.get(1).isEmpty()
-
 
     }
 
