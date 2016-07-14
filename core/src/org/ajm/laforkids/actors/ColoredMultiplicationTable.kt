@@ -88,15 +88,7 @@ open class ColoredMultiplicationTable : IColoredMultiplicationTable, Multiplicat
 
         if (highlight) {
             batch!!.color = selectionColor
-
-            if (!doneAnimating) {
-                animate(batch)
-            } else {
-                outlineRectangle(batch, productRectangle.x, productRectangle.y, productRectangle.width, productRectangle.height, outlineThickness)
-                outlineRectangle(batch, leftRectangle.x, leftRectangle.y, leftRectangle.width, leftRectangle.height, outlineThickness)
-                outlineRectangle(batch, rightRectangle.x, rightRectangle.y, rightRectangle.width, rightRectangle.height, outlineThickness)
-
-            }
+            animate(batch)
         }
     }
 
