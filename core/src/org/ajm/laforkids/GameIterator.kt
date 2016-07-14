@@ -3,6 +3,7 @@ package org.ajm.laforkids
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
@@ -14,8 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.Array
 import org.ajm.laforkids.actors.IColoredMultiplicationTable
+import org.ajm.laforkids.actors.Keypad
 import org.ajm.laforkids.actors.VisualizedMultiplicationTable
-import java.util.*
 
 /**
  * The progress of the game is implemented here: listeners are added to the different
@@ -107,36 +108,35 @@ class GameIterator {
         // add functionality to the answer buttons
         for (cell in multiplicationTable.matrixAnswers.cells) {
             val actor = cell.actor
-            if (actor is Label) {
-                actor.clearListeners()
-                actor.addListener(object : ClickListener() {
-                    override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                        val answer = actor.text.toString().toInt()
+            if (actor !is Label) continue
 
-                        try {
+            actor.clearListeners()
+            actor.addListener(object : ClickListener() {
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    val answer = actor.text.toString().toInt()
+                    try {
+                        val correctAnswer = progress(answer)
+                        if (correctAnswer) {
+                            val completed = gameLogic.isComplete()
+                            if (completed)
+                                newGameMessage()
+                            else
+                                gameLogic.updateAnswerAlternatives()
 
-                            val correctAnswer = progress(answer)
-                            if (correctAnswer) {
-                                val completed = gameLogic.isComplete()
-                                if (completed)
-                                    newGameMessage()
-                                else
-                                    gameLogic.updateAnswerAlternatives()
-
-                                multiplicationTable.notifyChangeListeners()
-                                main.scoreLabel!!.score = gameLogic.score
-                            } else {
-                                // wrong answer, hide label
-                                actor.isVisible = false
-                            }
-                        } catch (e: Exception) {
-                            // an entry may be just "-" (minus) if its currently being edited
-                            Main.log("Trouble when user clicked on answer button.")
-                            Main.log(e)
+                            multiplicationTable.notifyChangeListeners()
+                            main.scoreLabel!!.score = gameLogic.score
+                        } else {
+                            // wrong answer, hide label
+                            actor.isVisible = false
                         }
+                    } catch (e: Exception) {
+                        // an entry may be just "-" (minus) if its currently being edited
+                        Main.log("Trouble when user clicked on answer button.")
+                        Main.log(e)
                     }
-                })
-            }
+                }
+            })
+
         }
 
         // add functionality to help button
@@ -175,43 +175,56 @@ class GameIterator {
         })
 
         // let user change values in left and right matrix
-        val entries = Array<Cell<*>>()
-        entries.addAll(multiplicationTable.matrixLeft.cells)
-        entries.addAll(multiplicationTable.matrixRight.cells)
+        val entries = Array<Actor>()
+        entries.addAll(multiplicationTable.matrixLeft.children)
+        entries.addAll(multiplicationTable.matrixRight.children)
 
         var notIntegerLock = false
 
-        for (cell in entries) {
-            cell as Cell<Label>
+        for (actor in entries) {
+            if (actor !is Label) continue
 
-            cell.actor.clearListeners()
-            cell.actor.addListener(object : ClickListener() {
+            actor.clearListeners()
+            actor.addListener(object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
                     if (notIntegerLock) return
                     if (gameLogic.isComplete()) return
 
                     // add TextField on top of cell
-                    val textField = TextField(cell.actor.text.toString(), main.skin)
+                    val textField = object: TextField(actor.text.toString(), main.skin){
+                        override fun draw(batch: Batch?, parentAlpha: Float) {
+                            val pos = actor.localToStageCoordinates(Vector2())
+                            setPosition(pos.x, pos.y)
+                            setSize(actor.width, actor.height)
+                            super.draw(batch, parentAlpha)
+                        }
+                    }
                     main.stage.addActor(textField)
-                    val pos = cell.actor.localToStageCoordinates(Vector2())
-                    textField.setPosition(pos.x, pos.y)
-                    textField.setSize(cell.actorWidth, cell.actorHeight)
+
                     textField.setAlignment(Align.center)
                     textField.style.focusedFontColor = Color.WHITE
-                    textField.style.font = cell.actor.style.font
+                    textField.style.font = actor.style.font
                     textField.style = textField.style
+
+
                     main.stage.keyboardFocus = textField
                     textField.selectAll()
+
+                    // replace keypad
+                    textField.onscreenKeyboard = TextField.OnscreenKeyboard { }
+                    val keypad = main.showKeypad()
 
                     // filter for text input
                     val digitInput = TextField.TextFieldFilter { textField, c -> c.isDigit() || c.equals('-') }
                     textField.textFieldFilter = digitInput
 
+                    var textChanged = false
                     // change value in matrix
                     textField.addListener(object : ChangeListener() {
-                        override fun changed(event: ChangeEvent?, actor: Actor?) {
+                        override fun changed(event: ChangeEvent?, _actor: Actor?) {
+                            textChanged = true
                             if (textField.text.length > 0) {
-                                cell.actor.setText(textField.text)
+                                actor.setText(textField.text)
                                 multiplicationTable.notifyChangeListeners()
                             }
                             try { // determine if text is integer
@@ -223,26 +236,32 @@ class GameIterator {
                         }
                     })
 
+
                     // remove text field when click elsewhere
                     main.stage.addListener(object : ClickListener() {
                         override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                            if (main.stage.hit(x, y, true) != textField) {
-                                if (notIntegerLock) return // do not allow to close if not integer
+                            val hitActor = main.stage.hit(x, y, true)
 
-                                try {
-                                    if (!gameLogic.isComplete())
-                                        gameLogic.updateAnswerAlternatives()
+                            if (hitActor == textField) return
+                            if (keypad.contains(x, y)) return
+                            if (notIntegerLock) return // do not allow to close if not integer
 
-                                    textField.remove()
-                                    main.stage.removeListener(this)
-                                    multiplicationTable.notifyChangeListeners()
+                            try {
+                                if (!gameLogic.isComplete() && textChanged)
+                                    gameLogic.updateAnswerAlternatives()
 
-                                } catch (e: IllegalStateException) {
-                                    Main.log("Trouble removing text field:")
-                                    //Main.log(e)
-                                    throw e
-                                }
+                                textField.remove()
+                                main.stage.removeListener(this)
+                                multiplicationTable.notifyChangeListeners()
+
+                                keypad.remove()
+
+                            } catch (e: IllegalStateException) {
+                                Main.log("Trouble removing text field:")
+                                //Main.log(e)
+                                throw e
                             }
+
                         }
                     })
                 }
