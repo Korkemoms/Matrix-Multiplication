@@ -197,6 +197,7 @@ class SettingsInterface : ScrollPane {
         val table = children.first() as Table
         table.add(tableSettings).row()
         table.add(tableButtons)
+        table.padBottom(Gdx.graphics.width / 3f)
     }
 
     fun setFontColor(color: Color) {
