@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -56,18 +57,19 @@ class Main {
 
 
     // hardcoded parameters
-    val selectionColor: Color = palette[4]
-    val topBarColor: Color = palette[2]
-    val backgroundColor: Color = palette[10]
-    val matrixBackgroundTextColor: Color = palette[8]
-    val menuFontColor: Color = palette[9]
-    val menuBackgroundColor: Color = palette[0]
+    val selectionColor: Color = Color(palette[4])
+    val topBarBackgroundColor: Color = Color(palette[2])
+    val backgroundColor: Color = Color(palette[10])
+    val matrixBackgroundTextColor: Color = Color(palette[8])
+    val fontColor: Color = Color(palette[9])
+    val menuBackgroundColor: Color = Color(palette[2])
+    val keyboardBackgroundColor: Color = Color(palette[0]).lerp(Color.WHITE, 0.5f)
 
     val entryPad = 0f
     val screenFill = 1f // 1 = 100%
     val outlineThickness = 5f // just a factor
-    val interpolationMethod: Interpolation = Interpolation.pow3Out
-    val interpolationTime = 0.5f
+    val interpolationMethod: Interpolation = Interpolation.pow3Out // used for most animations
+    val interpolationTime = 0.5f // used for most animations
 
 
     val stage = Stage(ScreenViewport())
@@ -85,6 +87,7 @@ class Main {
     private val generator = SmartFontGenerator(Gdx.files.internal("OpenSans.ttf"))
     private val generatorDigits = SmartFontGenerator(Gdx.files.internal("OpenSans-Digits.ttf"))
     private val generatorABC = SmartFontGenerator(Gdx.files.internal("OpenSans-ABC.ttf"))
+
     private var firstInit = true
 
     val stressTest = false
@@ -113,11 +116,20 @@ class Main {
         }
     }
 
+    /**
+     * Show a soft keyboard for numbers.
+     * @return the keypad that is shown
+     */
     fun showKeypad(): Keypad {
         val keypad = Keypad(skin)
         stage.addActor(keypad)
         keypad.setPosition(0f, 0f)
         keypad.touchable = Touchable.enabled
+        keypad.color.set(keyboardBackgroundColor)
+        for (child in keypad.children) {
+            if (child !is TextButton) continue
+            child.label.style.fontColor = fontColor
+        }
         return keypad
     }
 
@@ -231,16 +243,18 @@ class Main {
         // prepare top bar
         val topBar = Table()
         topBar.background = skin.getDrawable("dot")
-        topBar.color.set(topBarColor)
+        topBar.color.set(topBarBackgroundColor)
         stage.addActor(topBar)
 
         // add menu
         if (resize) menu = Menu(stage, skin)
-        menu!!.setTextColor(menuFontColor)
+        menu!!.setTextColor(fontColor)
         menu!!.clearMenuItemListeners()
         topBar.add(menu).width(Gdx.graphics.width * 0.5f)
         menu!!.isVisible = true
         menu!!.menuBackgroundColor = menuBackgroundColor
+        menu!!.interpolationMethod = interpolationMethod
+        menu!!.interpolationTime = interpolationTime
 
         // add score display
         scoreLabel = ScoreLabel(skin, gameIterator.gameLogic.score)
@@ -248,7 +262,7 @@ class Main {
         scoreLabel!!.setAlignment(Align.right)
         scoreLabel!!.interpolationTime = interpolationTime
         scoreLabel!!.interpolationMethod = interpolationMethod
-        scoreLabel!!.style.fontColor = menuFontColor
+        scoreLabel!!.style.fontColor = fontColor
 
         topBar.pack()
         topBar.setPosition(0f, stage.height - topBar.height)
@@ -266,7 +280,7 @@ class Main {
 
                 // prepare settings interface
                 val settings = SettingsInterface(this@Main)
-                settings.setFontColor(menuFontColor)
+                settings.setFontColor(fontColor)
                 settings.onSaved = Runnable { init(true, false) }
                 settings.onCancel = Runnable {
                     stage.actors.removeValue(settings, true)
@@ -314,6 +328,17 @@ class Main {
             helpFrame!!.setPosition(0f, 0f)
             helpFrame!!.height = multiplicationTable!!.matrixAnswers.height
             helpFrame!!.width = stage.width
+
+            // scroll to the right in case the message is to big
+            val beganScroll = System.currentTimeMillis()
+            val interpolationTime = interpolationTime * 2 * (label.width / helpFrame!!.width)
+            fun scroll() {
+                val alpha = MathUtils.clamp((System.currentTimeMillis() - beganScroll) / 1000f, 0f, interpolationTime) / interpolationTime
+                val lerp = interpolationMethod.apply(alpha)
+                helpFrame!!.scrollPercentX = lerp
+                if (alpha < 1f) Gdx.app.postRunnable { scroll() }
+            }
+            scroll()
 
             // when user clicks anywhere remove the message
             stage.addListener(object : ClickListener() {
