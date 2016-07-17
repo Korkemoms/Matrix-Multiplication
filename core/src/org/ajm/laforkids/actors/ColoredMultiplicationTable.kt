@@ -59,9 +59,9 @@ open class ColoredMultiplicationTable : IColoredMultiplicationTable, Multiplicat
     private var doneAnimating = false
     private var beganAnimation = System.currentTimeMillis()
     private val dot: TextureRegion
-    private val productRectangle = Rectangle()
+    private val productRectangle = Rectangle(Gdx.graphics.width.toFloat(),0f,0f,0f)
     private val leftRectangle = Rectangle()
-    private val rightRectangle = Rectangle()
+    private val rightRectangle = Rectangle(Gdx.graphics.width.toFloat(),Gdx.graphics.height.toFloat(),0f,0f)
 
 
     /**
