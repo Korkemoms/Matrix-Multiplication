@@ -1,6 +1,9 @@
 package org.ajm.laforkids.actors
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
@@ -18,8 +21,12 @@ class Menu : Label {
     val nextLabel: Label
     val helpLabel: Label
     val settingsLabel: Label
-    var table = Table()
+    private var table = Table()
 
+
+    // settings
+    var interpolationTime = 1f
+    var interpolationMethod = Interpolation.linear
     var menuBackgroundColor = Color(Color.GRAY)
 
     /** Remove all listeners from the buttons(labels) in the dropdown menu.*/
@@ -45,47 +52,60 @@ class Menu : Label {
     }
 
     constructor(stage: Stage, skin: Skin) : super("Menu", skin) {
-
         nextLabel = Label("Next", skin)
-        nextLabel.setAlignment(Align.center)
+        nextLabel.setAlignment(Align.left)
 
         helpLabel = Label("Help", skin)
-        helpLabel.setAlignment(Align.center)
+        helpLabel.setAlignment(Align.left)
 
         settingsLabel = Label("Settings", skin)
-        settingsLabel.setAlignment(Align.center)
+        settingsLabel.setAlignment(Align.left)
 
 
         // add dropdown functionality
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                if (stage.actors.contains(table)) return
+                stage.actors.removeValue(table,true)
 
                 // prepare the dropdown menu
                 table = Table()
                 table.background = skin.getDrawable("dot")
                 table.color.set(menuBackgroundColor)
 
+                // determine size
                 var width = nextLabel.prefWidth
                 width = Math.max(helpLabel.prefWidth, width)
                 width = Math.max(settingsLabel.prefWidth, width)
                 width *= 1.25f
-
                 val height = nextLabel.prefHeight * 1.25f
 
+                // add labels and finalize layout
                 table.add(nextLabel).height(height).width(width).row()
                 table.add(helpLabel).height(height).width(width).row()
                 table.add(settingsLabel).height(height).width(width).row()
-
                 table.pack()
 
                 stage.addActor(table)
-                table.setPosition(0f, stage.height - table.height)
+
+
+                // drop down gradually
+                val beganAnimation = System.currentTimeMillis()
+                fun animate() {
+                    val alpha = MathUtils.clamp((System.currentTimeMillis() - beganAnimation) / 1000f, 0f, interpolationTime) / interpolationTime
+                    val lerp = interpolationMethod.apply(alpha)
+
+                    val pos = localToStageCoordinates(Vector2())
+
+                    table.setPosition(pos.x - table.width*(1-lerp), pos.y-table.height)
+
+                    if (alpha < 1f) Gdx.app.postRunnable { animate() }
+                }
+                animate()
 
                 // add functionality that hides the dropdown menu when player clicks somewhere else
                 stage.addListener(object : ClickListener() {
                     override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                        val pos = table.localToStageCoordinates(Vector2(0f, 0f))
+                        val pos = Vector2(0f, stage.height - table.height) // final position after animation
                         val rectangle = Rectangle(pos.x, pos.y, table.width, table.height)
                         val hit = rectangle.contains(x, y)
 
