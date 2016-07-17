@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
@@ -125,6 +126,45 @@ open class Matrix : IMatrix, Table {
                 add(label1).width(entryWidth).height(entryHeight)
             }
             row()
+        }
+    }
+
+    /**
+     * Get the index of the label. If matrix does not contain the label
+     * a [IllegalArgumentException] is thrown.
+     */
+    fun getIndex(label: Label): Int {
+        var i = 0
+        var found = false
+        for (actor in children) {
+            if (actor == label) {
+                found = true
+                break
+            }
+            i++
+        }
+        if (!found) throw IllegalArgumentException()
+        return i
+    }
+
+    fun getRow(label: Label): Int {
+        val index = getIndex(label)
+        return index / matrixColumns
+    }
+
+    fun getColumn(label: Label): Int {
+        val index = getIndex(label)
+        return index % matrixColumns
+    }
+
+    fun set(index: Int, value: Any) {
+        if (index < 0) throw IllegalArgumentException()
+
+        val actor = cells.get(index).actor
+
+        if (actor is Label) {
+            actor.isVisible = true
+            actor.setText(value.toString())
         }
     }
 
