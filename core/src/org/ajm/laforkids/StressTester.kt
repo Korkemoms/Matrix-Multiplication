@@ -23,7 +23,7 @@ class StressTester(val inputProcessor: InputProcessor) {
         val add = Vector2()
         try {
 
-            for (i in 0 until 100) {
+            for (i in 0 until 1) {
                 // chose a position and a radius
                 pos.set(random.nextFloat() * Gdx.graphics.width, random.nextFloat() * Gdx.graphics.height)
                 val radius = random.nextFloat() * Math.min(Gdx.graphics.width, Gdx.graphics.height).toFloat()
