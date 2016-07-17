@@ -1,6 +1,8 @@
 package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Touchable
@@ -70,7 +72,6 @@ class Keypad : ScrollPane {
 
         // make it somewhat opaque
         style.background = skin.getDrawable("dot")
-        color.set(0.9f,0.9f,0.9f,0.9f)
     }
 
     fun contains(x: Float, y: Float): Boolean {
