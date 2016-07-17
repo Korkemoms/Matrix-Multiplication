@@ -78,7 +78,7 @@ class GameLogic {
         multiplicationTable.highlightRow = getHighlightRow()
 
         // increment score if completed previous game
-        if (completed) score += Math.max(scoreThisRound/2, 0)
+        if (completed) score += Math.max(scoreThisRound / 2, 0)
         completed = false
         scoreThisRound = 0
     }
@@ -173,25 +173,48 @@ class GameLogic {
     fun getCorrectAnswer(): Int {
         assertInitialized()
 
-        val i = getHighlightRow()
-        val j = getHighlightCol()
+        return getCorrectAnswer(getHighlightRow(), getHighlightCol())
+    }
+
+    /**
+     * Compute the correct answer for currently highlighted entry.
+     * @throws [NumberFormatException] if a needed entry is not a number
+     */
+    fun getCorrectAnswer(row: Int, col: Int): Int {
+        assertInitialized()
+
         // convolve i'th left row with j'th right col
         var correctAnswer = 0
 
         for (k in 0 until multiplicationTable!!.columnsLeft) {
-            val a = multiplicationTable!!.matrixLeft.get(i, k).toInt()
-            val b = multiplicationTable!!.matrixRight.get(k, j).toInt()
+            val a = multiplicationTable!!.matrixLeft.get(row, k).toInt()
+            val b = multiplicationTable!!.matrixRight.get(k, col).toInt()
             correctAnswer += a * b
         }
         return correctAnswer
     }
 
+    /**
+     * Correct any non empty entry in the product matrix.
+     */
+    fun updateAnswers() {
+        assertInitialized()
+
+        for (row in 0 until rowsLeft) {
+            for (col in 0 until columnsRight) {
+                val current = multiplicationTable!!.matrixProduct.get(row, col)
+                if (current.isEmpty()) continue
+                multiplicationTable!!.matrixProduct.set(row, col, getCorrectAnswer(row, col))
+            }
+        }
+    }
+
     fun getHighlightRow(): Int {
-        return Math.min(progress % multiplicationTable!!.rowsLeft, maxProgress() - 1)
+        return Math.min(progress , maxProgress() - 1)% multiplicationTable!!.rowsLeft
     }
 
     fun getHighlightCol(): Int {
-        return Math.min(progress / multiplicationTable!!.rowsLeft, maxProgress() - 1)
+        return Math.min(progress , maxProgress() - 1)/ multiplicationTable!!.rowsLeft
     }
 
     fun getRandomLeftRowCount() = random.nextInt(settings.maxRowsLeft - settings.minRowsLeft + 1) + settings.minRowsLeft

@@ -191,7 +191,7 @@ class GameIterator {
                     if (gameLogic.isComplete()) return
 
                     // add TextField on top of cell
-                    val textField = object: TextField(actor.text.toString(), main.skin){
+                    val textField = object : TextField(actor.text.toString(), main.skin) {
                         override fun draw(batch: Batch?, parentAlpha: Float) {
                             val pos = actor.localToStageCoordinates(Vector2())
                             setPosition(pos.x, pos.y)
@@ -205,6 +205,7 @@ class GameIterator {
                     textField.style.focusedFontColor = Color.WHITE
                     textField.style.font = actor.style.font
                     textField.style = textField.style
+                    textField.maxLength = 6
 
 
                     main.stage.keyboardFocus = textField
@@ -215,7 +216,10 @@ class GameIterator {
                     val keypad = main.showKeypad()
 
                     // filter for text input
-                    val digitInput = TextField.TextFieldFilter { textField, c -> c.isDigit() || c.equals('-') }
+                    val digitInput = TextField.TextFieldFilter { textField,
+                                                                 c ->
+                        c.isDigit() || (c.equals('-') && !textField.text.contains('-') && textField.cursorPosition == 0)
+                    }
                     textField.textFieldFilter = digitInput
 
                     var textChanged = false
@@ -230,6 +234,8 @@ class GameIterator {
                             try { // determine if text is integer
                                 notIntegerLock = false
                                 textField.text.toInt()
+
+                                gameLogic.updateAnswers()
                             } catch (e: NumberFormatException) {
                                 notIntegerLock = true
                             }
