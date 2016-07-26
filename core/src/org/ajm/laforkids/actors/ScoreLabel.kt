@@ -17,6 +17,9 @@ class ScoreLabel : Label {
     // settings
     var interpolationMethod: Interpolation = Interpolation.pow4Out
     var interpolationTime = 0.75f
+
+    private var diffLabel: Label? = null
+
     var score = 0
         set(value) {
             previousDisplayedScore = displayedScore
@@ -39,11 +42,14 @@ class ScoreLabel : Label {
 
             // display the difference for a while, if there is one
             if (diff != 0 && stage != null) {
+                diffLabel?.remove() // only one at a time
 
                 // prepare label
                 val sign = if (diff < 0) "" else "+"
-                val label = Label(sign + diff.toString(), style)
-                stage.addActor(label)
+                diffLabel = Label(sign + diff.toString(), style)
+                val label = diffLabel as Label
+
+                stage.addActor(diffLabel)
                 val pos = localToStageCoordinates(Vector2())
                 label.setPosition(pos.x + width - getTextWidth(style.font, score.toString()) - label.width - style.font.spaceWidth * 2f, pos.y)
 
