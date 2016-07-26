@@ -216,8 +216,7 @@ class GameIterator {
                     val keypad = main.showKeypad()
 
                     // filter for text input
-                    val digitInput = TextField.TextFieldFilter { textField,
-                                                                 c ->
+                    val digitInput = TextField.TextFieldFilter { textField,c ->
                         c.isDigit() || (c.equals('-') && !textField.text.contains('-') && textField.cursorPosition == 0)
                     }
                     textField.textFieldFilter = digitInput
