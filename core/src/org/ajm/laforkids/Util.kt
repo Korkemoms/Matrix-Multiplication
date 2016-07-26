@@ -1,7 +1,10 @@
 package org.ajm.laforkids
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
+import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.ui.Table
@@ -28,4 +31,24 @@ fun getTextWidth(font: BitmapFont, text: String): Float {
     layout.setText(font, text)
     val width = layout.width
     return width
+}
+
+/**
+ * Calls the given function once every frame until the animation is done.
+ */
+fun animate(function: (lerp: Float) -> Unit,
+            interpolationMethod: Interpolation,
+            interpolationTime: Float) {
+
+    val beganAnimation = System.currentTimeMillis()
+    fun animate() {
+        val seconds = (System.currentTimeMillis() - beganAnimation) / 1000f
+        val alpha = MathUtils.clamp(seconds, 0f, interpolationTime) / interpolationTime
+        val lerp = interpolationMethod.apply(alpha)
+
+        function.invoke(lerp)
+
+        if (alpha < 1f) Gdx.app.postRunnable { animate() }
+    }
+    animate()
 }
