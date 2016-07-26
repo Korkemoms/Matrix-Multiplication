@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -193,12 +194,17 @@ class GameIterator {
                     // add TextField on top of cell
                     val textField = object : TextField(actor.text.toString(), main.skin) {
                         override fun draw(batch: Batch?, parentAlpha: Float) {
+                            updateTextFieldPos()
+                            super.draw(batch, parentAlpha)
+                        }
+
+                        fun updateTextFieldPos() {
                             val pos = actor.localToStageCoordinates(Vector2())
                             setPosition(pos.x, pos.y)
                             setSize(actor.width, actor.height)
-                            super.draw(batch, parentAlpha)
                         }
                     }
+                    textField.updateTextFieldPos()
                     main.stage.addActor(textField)
 
                     textField.setAlignment(Align.center)
@@ -215,8 +221,21 @@ class GameIterator {
                     textField.onscreenKeyboard = TextField.OnscreenKeyboard { }
                     val keypad = main.showKeypad()
 
+                    // animate keypad
+                    val scrollPane = main.multiplicationTable!!.parent as ScrollPane
+                    val textFieldPos = actor.localToStageCoordinates(Vector2())
+                    val correct = keypad.height * scrollPane.scrollPercentY
+                    textFieldPos.y -= correct
+                    val scroll = (keypad.height - textFieldPos.y) / keypad.height
+
+                    fun scroll() = { lerp: Float ->
+                        if (scroll > scrollPane.scrollPercentY) // only scroll down
+                            scrollPane.scrollPercentY = scroll * lerp
+                    }
+                    animate(scroll(), main.interpolationMethod, main.interpolationTime)
+
                     // filter for text input
-                    val digitInput = TextField.TextFieldFilter { textField,c ->
+                    val digitInput = TextField.TextFieldFilter { textField, c ->
                         c.isDigit() || (c.equals('-') && !textField.text.contains('-') && textField.cursorPosition == 0)
                     }
                     textField.textFieldFilter = digitInput
