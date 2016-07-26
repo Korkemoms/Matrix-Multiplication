@@ -65,8 +65,8 @@ class Menu : Label {
         // add dropdown functionality
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                if(stage.actors.contains(table,true)) return // already visible
-                stage.actors.removeValue(table,true)
+                if (stage.actors.contains(table, true)) return // already visible
+                stage.actors.removeValue(table, true)
 
                 // prepare the dropdown menu
                 table = Table()
@@ -90,18 +90,11 @@ class Menu : Label {
 
 
                 // drop down gradually
-                val beganAnimation = System.currentTimeMillis()
-                fun animate() {
-                    val alpha = MathUtils.clamp((System.currentTimeMillis() - beganAnimation) / 1000f, 0f, interpolationTime) / interpolationTime
-                    val lerp = interpolationMethod.apply(alpha)
-
+                fun animate() = { lerp: Float ->
                     val pos = localToStageCoordinates(Vector2())
-
-                    table.setPosition(pos.x - table.width*(1-lerp), pos.y-table.height)
-
-                    if (alpha < 1f) Gdx.app.postRunnable { animate() }
+                    table.setPosition(pos.x - table.width * (1 - lerp), pos.y - table.height)
                 }
-                animate()
+                org.ajm.laforkids.animate(animate(), interpolationMethod, interpolationTime)
 
                 // add functionality that hides the dropdown menu when player clicks somewhere else
                 stage.addListener(object : ClickListener() {

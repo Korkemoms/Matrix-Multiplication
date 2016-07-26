@@ -28,17 +28,11 @@ class ScoreLabel : Label {
             scoreSetAtTime = System.currentTimeMillis()
 
             // count up or down the displayed score
-            fun animateScore() { // recursive
-                val alpha = MathUtils.clamp((System.currentTimeMillis() - scoreSetAtTime) / 1000f, 0f, interpolationTime) / interpolationTime
-                val lerp = interpolationMethod.apply(alpha)
-
-                // update score
+            fun animate() = { lerp: Float ->
                 displayedScore = MathUtils.lerp(previousDisplayedScore.toFloat(), score.toFloat(), lerp).toInt()
                 setText(displayedScore.toString())
-                if (score != displayedScore)
-                    Gdx.app.postRunnable { animateScore() }
             }
-            animateScore()
+            org.ajm.laforkids.animate(animate(), interpolationMethod, interpolationTime)
 
             // display the difference for a while, if there is one
             if (diff != 0 && stage != null) {
