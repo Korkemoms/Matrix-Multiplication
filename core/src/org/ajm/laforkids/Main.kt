@@ -106,7 +106,7 @@ class Main {
         init(true, true)
 
 
-        stressTester = StressTester(stage)
+        stressTester = StressTester(stage, this)
         stressTester.active = stressTest
         if (stressTest) {
             settings.maxColumnsLeft = 20
@@ -123,31 +123,35 @@ class Main {
     fun showKeypad(): Keypad {
         val keypad = Keypad(skin)
         stage.addActor(keypad)
-        keypad.setPosition(0f, 0f)
         keypad.touchable = Touchable.enabled
         keypad.color.set(keyboardBackgroundColor)
         for (child in keypad.children) {
             if (child !is TextButton) continue
             child.label.style.fontColor = fontColor
         }
+
+        // scroll in
+        animate({ lerp -> keypad.setPosition(0f, keypad.height * (lerp - 1)) }, interpolationMethod, interpolationTime)
+
         return keypad
     }
 
-    fun resize() {
-        init(false, true)
+
+    fun resize(width: Int = Gdx.graphics.width, height: Int = Gdx.graphics.height) {
+        init(false, true, width, height)
     }
 
-    fun init(newGame: Boolean, resize: Boolean) {
+    fun init(newGame: Boolean, resize: Boolean, width: Int = Gdx.graphics.width, height: Int = Gdx.graphics.height) {
         Gdx.graphics.requestRendering()
 
         if (newGame) gameIterator.newGame()
 
         // to update the fonts everything is rebuilt
-        stage.viewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
+        stage.viewport.update(width, height, true)
         stage.clear()
 
         // prepare default font
-        var size = (10f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(Gdx.graphics.width, Gdx.graphics.height) / 10f).toInt()
+        var size = (10f + 0.5f * Math.sqrt(Math.sqrt(Gdx.graphics.density.toDouble())) * Math.min(width, height) / 10f).toInt()
 
         if (resize) {
             if (defaultFont != null) {
@@ -161,21 +165,21 @@ class Main {
 
         // determine some visual details
         val padTop = defaultFont!!.capHeight * 2f
-        val tableHeight = (Gdx.graphics.height - padTop).toInt()
+        val tableHeight = (height - padTop).toInt()
 
         val gl = gameIterator.gameLogic
         val columns = gl.columnsLeft + gl.columnsRight
         val rows = gl.rowsLeft + gl.columnsLeft + 1
 
         var outlineThickness = this.outlineThickness * (2f +
-                6f * Math.min(Gdx.graphics.width, tableHeight) / (1000f)).toInt().toFloat()
+                6f * Math.min(width, tableHeight) / (1000f)).toInt().toFloat()
         outlineThickness /= Math.max(columns, rows).toFloat()
 
         val matrixInsidePad = 3 * outlineThickness
         val matrixOutsidePad = outlineThickness
         val pad = matrixInsidePad + matrixOutsidePad
 
-        val entryWidth = (Gdx.graphics.width.toFloat() * screenFill - pad * 4 - columns * entryPad * 2) /
+        val entryWidth = (width.toFloat() * screenFill - pad * 4 - columns * entryPad * 2) /
                 Math.max(columns, gl.answerAlternatives).toFloat()
         val entryHeight = (tableHeight * screenFill - pad * 6 - rows * entryPad * 2) / rows.toFloat()
 
@@ -219,9 +223,9 @@ class Main {
         multiplicationTable!!.matrixEntryPad = entryPad
         multiplicationTable!!.setFillParent(true)
         multiplicationTable!!.padTop(padTop)
-        multiplicationTable!!.padBottom(Gdx.graphics.height / 3f)
+        multiplicationTable!!.padBottom(height / 3f)
         multiplicationTable!!.align(Align.bottom)
-        multiplicationTable!!.matrixAnswers.entryWidth = Gdx.graphics.width / gl.answerAlternatives.toFloat()
+        multiplicationTable!!.matrixAnswers.entryWidth = width / gl.answerAlternatives.toFloat()
         multiplicationTable!!.matrixAnswers.entryPad = 0f
         multiplicationTable!!.setMatrixBackgroundTextColor(matrixBackgroundTextColor)
 
@@ -231,7 +235,7 @@ class Main {
             override fun draw(batch: Batch?, parentAlpha: Float) {
                 batch as Batch
                 batch.color = backgroundColor
-                dot.draw(batch, x, y, width, height)
+                dot.draw(batch, x, y, width.toFloat(), height.toFloat() )
                 super.draw(batch, parentAlpha)
             }
         }
@@ -250,7 +254,7 @@ class Main {
         if (resize) menu = Menu(stage, skin)
         menu!!.setTextColor(fontColor)
         menu!!.clearMenuItemListeners()
-        topBar.add(menu).width(Gdx.graphics.width * 0.5f)
+        topBar.add(menu).width(width * 0.5f)
         menu!!.isVisible = true
         menu!!.menuBackgroundColor = menuBackgroundColor
         menu!!.interpolationMethod = interpolationMethod
@@ -258,7 +262,7 @@ class Main {
 
         // add score display
         scoreLabel = ScoreLabel(skin, gameIterator.gameLogic.score)
-        topBar.add(scoreLabel).width(Gdx.graphics.width * (0.49f)).padRight(Gdx.graphics.width * 0.01f)
+        topBar.add(scoreLabel).width(width * (0.49f)).padRight(width * 0.01f)
         scoreLabel!!.setAlignment(Align.right)
         scoreLabel!!.interpolationTime = interpolationTime
         scoreLabel!!.interpolationMethod = interpolationMethod
@@ -330,15 +334,8 @@ class Main {
             helpFrame!!.width = stage.width
 
             // scroll to the right in case the message is to big
-            val beganScroll = System.currentTimeMillis()
             val interpolationTime = interpolationTime * 2 * (label.width / helpFrame!!.width)
-            fun scroll() {
-                val alpha = MathUtils.clamp((System.currentTimeMillis() - beganScroll) / 1000f, 0f, interpolationTime) / interpolationTime
-                val lerp = interpolationMethod.apply(alpha)
-                helpFrame!!.scrollPercentX = lerp
-                if (alpha < 1f) Gdx.app.postRunnable { scroll() }
-            }
-            scroll()
+            animate({ lerp -> helpFrame!!.scrollPercentX = lerp }, interpolationMethod, interpolationTime)
 
             // when user clicks anywhere remove the message
             stage.addListener(object : ClickListener() {

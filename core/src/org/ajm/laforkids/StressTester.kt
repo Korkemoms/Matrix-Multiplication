@@ -2,6 +2,7 @@ package org.ajm.laforkids
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputProcessor
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import java.util.*
 
@@ -9,7 +10,7 @@ import java.util.*
  * Clicks randomly really fast.
  * Revealed some weaknesses that are now fixed.
  */
-class StressTester(val inputProcessor: InputProcessor) {
+class StressTester(val inputProcessor: InputProcessor,val adapter: Main) {
     private val random = Random()
 
     var active = false
@@ -22,8 +23,10 @@ class StressTester(val inputProcessor: InputProcessor) {
         val pos = Vector2()
         val add = Vector2()
         try {
+            if(MathUtils.randomBoolean(0.1f))
+                adapter.resize(100+MathUtils.random(1000),100+MathUtils.random(1000))
 
-            for (i in 0 until 1) {
+            for (i in 0 until 10) {
                 // chose a position and a radius
                 pos.set(random.nextFloat() * Gdx.graphics.width, random.nextFloat() * Gdx.graphics.height)
                 val radius = random.nextFloat() * Math.min(Gdx.graphics.width, Gdx.graphics.height).toFloat()
