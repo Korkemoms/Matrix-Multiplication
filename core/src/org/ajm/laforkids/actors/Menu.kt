@@ -65,6 +65,7 @@ class Menu : Label {
         // add dropdown functionality
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                if(stage.actors.contains(table,true)) return // already visible
                 stage.actors.removeValue(table,true)
 
                 // prepare the dropdown menu
