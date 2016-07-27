@@ -61,7 +61,6 @@ class Menu : Label {
         settingsLabel = Label("Settings", skin)
         settingsLabel.setAlignment(Align.left)
 
-
         // add dropdown functionality
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
