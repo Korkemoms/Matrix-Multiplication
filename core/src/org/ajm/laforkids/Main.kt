@@ -110,9 +110,13 @@ class Main {
         stressTester = StressTester(stage, this)
         stressTester.active = stressTest
         if (stressTest) {
-            settings.maxColumnsLeft = 20
-            settings.maxRowsLeft = 20
-            settings.maxColumnsRight = 20
+
+            settings.minColumnsLeft = 1
+            settings.maxColumnsLeft = 5
+            settings.minRowsLeft = 1
+            settings.maxRowsLeft = 5
+            settings.minColumnsRight = 1
+            settings.maxColumnsRight = 5
             // do not save
         }
         keypad = Keypad(skin)
