@@ -276,8 +276,10 @@ class GameIterator {
                                     multiplicationTable.notifyChangeListeners()
 
 
-                                    if (hitActor !is TextField)
+                                    if (hitActor !is TextField){
                                         keypad.scrollOut()
+                                        scrollPane.scrollPercentY = 0f
+                                    }
 
                                 } catch (e: IllegalStateException) {
                                     Main.log("Trouble removing text field:")
