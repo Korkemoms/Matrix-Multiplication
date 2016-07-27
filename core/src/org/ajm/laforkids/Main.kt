@@ -83,16 +83,17 @@ class Main {
     var font_large: BitmapFont? = null
     var defaultFont: BitmapFont? = null
     var scoreLabel: ScoreLabel? = null
+    var keypad: Keypad
 
     private val generator = SmartFontGenerator(Gdx.files.internal("OpenSans.ttf"))
     private val generatorDigits = SmartFontGenerator(Gdx.files.internal("OpenSans-Digits.ttf"))
     private val generatorABC = SmartFontGenerator(Gdx.files.internal("OpenSans-ABC.ttf"))
 
+
     private var firstInit = true
 
     val stressTest = false
     private val stressTester: StressTester
-
 
     constructor() {
 
@@ -114,28 +115,15 @@ class Main {
             settings.maxColumnsRight = 20
             // do not save
         }
-    }
-
-    /**
-     * Show a soft keyboard for numbers.
-     * @return the keypad that is shown
-     */
-    fun showKeypad(): Keypad {
-        val keypad = Keypad(skin)
-        stage.addActor(keypad)
-        keypad.touchable = Touchable.enabled
+        keypad = Keypad(skin)
         keypad.color.set(keyboardBackgroundColor)
         for (child in keypad.children) {
             if (child !is TextButton) continue
             child.label.style.fontColor = fontColor
         }
-
-        // scroll in
-        animate({ lerp -> keypad.setPosition(0f, keypad.height * (lerp - 1)) }, interpolationMethod, interpolationTime)
-
-        return keypad
+        keypad.interpolationMethod = interpolationMethod
+        keypad.interpolationTime = interpolationTime
     }
-
 
     fun resize(width: Int = Gdx.graphics.width, height: Int = Gdx.graphics.height) {
         init(false, true, width, height)
@@ -235,7 +223,7 @@ class Main {
             override fun draw(batch: Batch?, parentAlpha: Float) {
                 batch as Batch
                 batch.color = backgroundColor
-                dot.draw(batch, x, y, width.toFloat(), height.toFloat() )
+                dot.draw(batch, x, y, width.toFloat(), height.toFloat())
                 super.draw(batch, parentAlpha)
             }
         }
@@ -304,6 +292,16 @@ class Main {
 
 
         multiplicationTable!!.updateTopLeftActorSize()
+
+        keypad = Keypad(skin)
+        keypad.color.set(keyboardBackgroundColor)
+        for (child in keypad.children) {
+            if (child !is TextButton) continue
+            child.label.style.fontColor = fontColor
+        }
+        keypad.interpolationMethod = interpolationMethod
+        keypad.interpolationTime = interpolationTime
+
         firstInit = false
     }
 

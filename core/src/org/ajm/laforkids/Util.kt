@@ -26,6 +26,12 @@ fun getAllChildren(table: Group): Array<Actor> {
     return getAllChildren(table, Array<Actor>())
 }
 
+fun isAscendant(actor: Actor, possibleParent: Group): Boolean {
+    if (actor.parent == null) return false
+    if (actor.parent == possibleParent) return true
+    return isAscendant(actor.parent, possibleParent)
+}
+
 fun getTextWidth(font: BitmapFont, text: String): Float {
     val layout = GlyphLayout()
     layout.setText(font, text)
