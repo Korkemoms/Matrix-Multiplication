@@ -2,6 +2,7 @@ package org.ajm.laforkids.actors
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.*
@@ -9,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.Array
 import org.ajm.laforkids.Main
+import org.ajm.laforkids.animate
 import org.ajm.laforkids.getAllChildren
 
 /**
@@ -114,26 +116,40 @@ class SettingsInterface : ScrollPane {
         tableSettings.add(aux).padBottom(pad * 5).align(Align.left).row()
 
         // replace onscreen keyboard
+
         for (actor in getAllChildren(tableSettings)) {
             if (actor !is TextField) continue
             actor.onscreenKeyboard = TextField.OnscreenKeyboard { }
+
 
             actor.addListener(object : ClickListener() {
                 override fun clicked(event: InputEvent?, x: Float, y: Float) {
                     actor.selectAll()
 
-                    val keypad = main.showKeypad()
 
+                    val keypad = main.keypad
+
+                    Gdx.app.postRunnable { keypad.scrollIn(main.stage) }
+
+                    // scroll down if needed
+                    val scrollPane = this@SettingsInterface
+                    val pos = actor.localToAscendantCoordinates(tableSettings.parent, Vector2())
+                    scrollPane.scrollTo(pos.x, pos.y - keypad.height, 1f, 1f)
+
+                    // listener for removing the keypad
                     stage.addListener(object : ClickListener() {
                         override fun clicked(event: InputEvent?, x: Float, y: Float) {
                             val hitActor = main.stage.hit(x, y, true)
 
                             if (hitActor == actor) return
                             if (keypad.contains(x, y)) return
+                            if (hitActor is TextField) return
 
                             main.stage.removeListener(this)
-                            keypad.remove()
+                            keypad.scrollOut()
+
                             actor.clearSelection()
+
                         }
                     })
                 }

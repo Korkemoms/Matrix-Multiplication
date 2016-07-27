@@ -182,6 +182,7 @@ class GameIterator {
 
         var notIntegerLock = false
 
+
         for (actor in entries) {
             if (actor !is Label) continue
 
@@ -219,20 +220,14 @@ class GameIterator {
 
                     // replace keypad
                     textField.onscreenKeyboard = TextField.OnscreenKeyboard { }
-                    val keypad = main.showKeypad()
+                    val keypad = main.keypad
+                    keypad.scrollIn(main.stage)
 
-                    // animate keypad
+
+                    // scroll down if needed
                     val scrollPane = main.multiplicationTable!!.parent as ScrollPane
-                    val textFieldPos = actor.localToStageCoordinates(Vector2())
-                    val correct = keypad.height * scrollPane.scrollPercentY
-                    textFieldPos.y -= correct
-                    val scroll = (keypad.height - textFieldPos.y) / keypad.height
-
-                    fun scroll() = { lerp: Float ->
-                        if (scroll > scrollPane.scrollPercentY) // only scroll down
-                            scrollPane.scrollPercentY = scroll * lerp
-                    }
-                    animate(scroll(), main.interpolationMethod, main.interpolationTime)
+                    val pos = actor.localToAscendantCoordinates(multiplicationTable, Vector2())
+                    scrollPane.scrollTo(pos.x, pos.y - keypad.height, 1f, 1f)
 
                     // filter for text input
                     val digitInput = TextField.TextFieldFilter { textField, c ->
@@ -264,27 +259,34 @@ class GameIterator {
                     // remove text field when click elsewhere
                     main.stage.addListener(object : ClickListener() {
                         override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                            val hitActor = main.stage.hit(x, y, true)
 
-                            if (hitActor == textField) return
-                            if (keypad.contains(x, y)) return
-                            if (notIntegerLock) return // do not allow to close if not integer
+                            fun removeIfNecessary() {
+                                val hitActor = main.stage.hit(x, y, false)
 
-                            try {
-                                if (!gameLogic.isComplete() && textChanged)
-                                    gameLogic.updateAnswerAlternatives()
+                                if (hitActor == textField) return
+                                if (keypad.contains(x, y)) return
+                                if (notIntegerLock) return // do not allow to close if not integer
 
-                                textField.remove()
-                                main.stage.removeListener(this)
-                                multiplicationTable.notifyChangeListeners()
+                                try {
+                                    if (!gameLogic.isComplete() && textChanged)
+                                        gameLogic.updateAnswerAlternatives()
 
-                                keypad.remove()
+                                    textField.remove()
+                                    main.stage.removeListener(this)
+                                    multiplicationTable.notifyChangeListeners()
 
-                            } catch (e: IllegalStateException) {
-                                Main.log("Trouble removing text field:")
-                                //Main.log(e)
-                                throw e
+
+                                    if (hitActor !is TextField)
+                                        keypad.scrollOut()
+
+                                } catch (e: IllegalStateException) {
+                                    Main.log("Trouble removing text field:")
+                                    //Main.log(e)
+                                    throw e
+                                }
                             }
+
+                            Gdx.app.postRunnable { removeIfNecessary() }
 
                         }
                     })
